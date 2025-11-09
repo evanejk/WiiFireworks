@@ -11,6 +11,7 @@
 #include "ystar_jpg.h"
 #include "boxes_jpg.h"
 #include "boxesInvert_jpg.h"
+#include "shot_jpg.h"
 #include "hellocpp.h"
 
 const double MY_PI = 3.14159265358979323846; // Or higher precision
@@ -34,6 +35,8 @@ int main(int argc, char **argv) {
     GRRLIB_texImg *tex_boxes = GRRLIB_LoadTexture(boxes_jpg);
     GRRLIB_texImg *tex_boxes_invert = GRRLIB_LoadTexture(boxesInvert_jpg);
     GRRLIB_texImg *tex_ystar = GRRLIB_LoadTexture(ystar_jpg);
+    GRRLIB_texImg *tex_shot = GRRLIB_LoadTexture(shot_jpg);
+
 
 
     GRRLIB_SetBackgroundColour(0x47, 0x25, 0xA8, 0x22);
@@ -91,12 +94,12 @@ int main(int argc, char **argv) {
 
         if(abs(playerX) > 125 || abs(playerY) > 125 || abs(playerZ) > 125){
             //move stars beams and special
-            moveStarsBeamsSpecial(-playerX,-playerY,-playerZ);
+            moveStarsBeamsSpecialEtc(-playerX,-playerY,-playerZ);
             playerX = 0;
             playerY = 0;
             playerZ = 0;
         }
-
+        loopAroundOutOfBoundsWorldObjects();
         bool moveIt = false;
         WPAD_ScanPads();  // Scan the Wiimotes
         GRRLIB_2dMode();
@@ -183,7 +186,9 @@ int main(int argc, char **argv) {
         float yLookTarget = Ayx*px + Ayy*py + Ayz*pz;
         float zLookTarget = Azx*px + Azy*py + Azz*pz;
 
-
+        if(buttonsHeld & WPAD_BUTTON_2){
+            shoot(timeLongLong,playerX,playerY,playerZ,xLookTarget,yLookTarget,zLookTarget);
+        }
 
         //float xLookTarget = -sin(lookRightAmount);
         //float zLookTarget = cos(lookRightAmount);
@@ -217,10 +222,12 @@ int main(int argc, char **argv) {
 
 
 
-        GRRLIB_3dMode(0.1, 1000, 120, 1, 0);
+        GRRLIB_3dMode(0.1, 2000, 120, 1, 0);
         GRRLIB_SetBlend(GRRLIB_BLEND_ALPHA);
         int howManyBeams = loadBeams(timePassedSinceLastFrame);
         int howManyBeamsSpecial = loadBeamsSpecial(timePassedSinceLastFrame);
+        int howManyShots = loadShots(timeLongLong,timePassedSinceLastFrame);
+
         howManyBeamsTest = howManyBeams + howManyBeamsSpecial;
 
         GRRLIB_ObjectView(0,0,0,0,0,0,1.0f,1.0f,1.0f);
@@ -249,6 +256,15 @@ int main(int argc, char **argv) {
         GX_End();
 
 
+        GRRLIB_ObjectView(0,0,0,0,0,0,1.0f,1.0f,1.0f);
+        GRRLIB_SetTexture(tex_shot, FALSE);
+        GX_Begin(GX_QUADS, GX_VTXFMT0, howManyShots * 24);
+
+        drawShots();
+
+        GX_End();
+
+
         GRRLIB_Render();  // Render the frame buffer to the TV
 
     }
@@ -256,6 +272,7 @@ int main(int argc, char **argv) {
     GRRLIB_FreeTexture(tex_boxes_invert);
     GRRLIB_FreeTexture(tex_font);
     GRRLIB_FreeTexture(tex_ystar);
+    GRRLIB_FreeTexture(tex_shot);
     GRRLIB_Exit(); // clear the memory allocated by GRRLIB
 
     exit(0);  // Use exit() to exit a program, do not use 'return' from main()

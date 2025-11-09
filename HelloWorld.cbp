@@ -64,6 +64,7 @@
 		<Unit filename="data/boxes.jpg" />
 		<Unit filename="data/boxesInvert.jpg" />
 		<Unit filename="data/font.png" />
+		<Unit filename="data/shot.jpg" />
 		<Unit filename="data/ystar.jpg" />
 		<Unit filename="source/Beam.cpp" />
 		<Unit filename="source/Beam.h" />

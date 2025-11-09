@@ -7,6 +7,7 @@
 #include "hellocpp.h"
 #include "Beam.h"
 #include "Y_Star.h"
+#include "Shot.h"
 
 static std::vector<Y_Star> yStars;
 void loadYstars(){
@@ -80,6 +81,17 @@ void special(int timePassed){
     }
 }
 
+static std::vector<Shot> shots;
+int shotReloadingSpeed = 200;
+int bulletLifetime = 2000;
+long long shotReloadingTimer = 0;
+void shoot(long long currentTime,float fromX,float fromY,float fromZ,float targetX,float targetY,float targetZ){
+    if(currentTime >= shotReloadingTimer){
+        shots.push_back(Shot(fromX,fromY,fromZ,targetX,targetY,targetZ,currentTime + bulletLifetime));
+        shotReloadingTimer = currentTime + shotReloadingSpeed;
+    }
+}
+
 double calculateDistance(float x1, float y1, float z1, float x2, float y2, float z2) {
     double dx = x2 - x1;
     double dy = y2 - y1;
@@ -87,11 +99,31 @@ double calculateDistance(float x1, float y1, float z1, float x2, float y2, float
     return std::sqrt(std::pow(dx, 2) + std::pow(dy, 2) + std::pow(dz, 2));
 }
 
-void moveStarsBeamsSpecial(float moveX, float moveY, float moveZ){
+void moveStarsBeamsSpecialEtc(float moveX, float moveY, float moveZ){
     for(Block& block:yStars){
         block.x += moveX;
         block.y += moveY;
         block.z += moveZ;
+    }
+    for(Block& block:beams){
+        block.x += moveX;
+        block.y += moveY;
+        block.z += moveZ;
+    }
+    for(Block& block:specialBeams){
+        block.x += moveX;
+        block.y += moveY;
+        block.z += moveZ;
+    }
+    for(Block& block:shots){
+        block.x += moveX;
+        block.y += moveY;
+        block.z += moveZ;
+    }
+    loopAroundOutOfBoundsWorldObjects();
+}
+void loopAroundOutOfBoundsWorldObjects(){
+   for(Block& block:yStars){
         if(block.x > 1000){
             block.x -= 2000;
         }
@@ -112,9 +144,6 @@ void moveStarsBeamsSpecial(float moveX, float moveY, float moveZ){
         }
     }
     for(Block& block:beams){
-        block.x += moveX;
-        block.y += moveY;
-        block.z += moveZ;
         if(block.x > 1000){
             block.x -= 2000;
         }
@@ -135,9 +164,6 @@ void moveStarsBeamsSpecial(float moveX, float moveY, float moveZ){
         }
     }
     for(Block& block:specialBeams){
-        block.x += moveX;
-        block.y += moveY;
-        block.z += moveZ;
         if(block.x > 1000){
             block.x -= 2000;
         }
@@ -157,8 +183,44 @@ void moveStarsBeamsSpecial(float moveX, float moveY, float moveZ){
             block.z += 2000;
         }
     }
-}
+    for(Block& block:shots){
+        if(block.x > 1000){
+            block.x -= 2000;
+        }
+        if(block.x < -1000){
+            block.x += 2000;
+        }
+        if(block.y > 1000){
+            block.y -= 2000;
+        }
+        if(block.y < -1000){
+            block.y += 2000;
+        }
+        if(block.z > 1000){
+            block.z -= 2000;
+        }
+        if(block.z < -1000){
+            block.z += 2000;
+        }
+    }
 
+}
+float shotSpeed = 1.2f;
+int loadShots(long long currentTime, int timePassed){
+    std::vector<Shot> newShotsList;
+    long speed = shotSpeed * (float)timePassed;
+    for(Shot& shot:shots){
+        if(currentTime >= shot.endTime ){
+            continue;
+        }
+        shot.x = shot.x + (shot.xAcc * speed);
+        shot.y = shot.y + (shot.yAcc * speed);
+        shot.z = shot.z + (shot.zAcc * speed);
+        newShotsList.push_back(shot);
+    }
+    shots = newShotsList;
+    return shots.size();
+}
 float beamSpeed = .42f;
 int loadBeams(int timePassed){
    std::vector<Beam> newBeamsList;
@@ -192,7 +254,7 @@ int loadBeamsSpecial(int timePassed){
     specialBeams = newBeamsListSpecial;
     return specialBeams.size();
 }
-const float BEAM_SIZE = 4.20f;
+const float BEAM_SIZE = 7.10f;
 void drawBeams(){
     for(Beam& beam:beams){
         GX_Position3f32(-BEAM_SIZE + beam.x,BEAM_SIZE + beam.y,BEAM_SIZE + beam.z);
@@ -274,7 +336,7 @@ void drawBeams(){
         GX_TexCoord2f32(0.0f,1.0f);
     }
 }
-const float BEAM_SIZE_SPECIAL = 1.20f;
+const float BEAM_SIZE_SPECIAL = 4.20f;
 void drawBeamsSpecial(){
     for(Beam& beam:specialBeams){
         GX_Position3f32(-BEAM_SIZE_SPECIAL + beam.x,BEAM_SIZE_SPECIAL + beam.y,BEAM_SIZE_SPECIAL + beam.z);
@@ -434,6 +496,88 @@ void drawY_Stars(){
         GX_Color1u32(0xFFFFFFFF);
         GX_TexCoord2f32(1.0f,1.0f);
         GX_Position3f32(BEAM_SIZE_Y_STARS + beam.x,-BEAM_SIZE_Y_STARS + beam.y,BEAM_SIZE_Y_STARS + beam.z);
+        GX_Color1u32(0xFFFFFFFF);
+        GX_TexCoord2f32(0.0f,1.0f);
+    }
+}
+const float BEAM_SIZE_SHOTS = 9.10f;
+void drawShots(){
+    for(Block& beam:shots){
+        GX_Position3f32(-BEAM_SIZE_SHOTS + beam.x,BEAM_SIZE_SHOTS + beam.y,BEAM_SIZE_SHOTS + beam.z);
+        GX_Color1u32(0xFFFFFFFF);
+        GX_TexCoord2f32(0.0f,0.0f);
+        GX_Position3f32(BEAM_SIZE_SHOTS + beam.x,BEAM_SIZE_SHOTS + beam.y,BEAM_SIZE_SHOTS + beam.z);
+        GX_Color1u32(0xFFFFFFFF);
+        GX_TexCoord2f32(1.0f,0.0f);
+        GX_Position3f32(BEAM_SIZE_SHOTS + beam.x,-BEAM_SIZE_SHOTS + beam.y,BEAM_SIZE_SHOTS + beam.z);
+        GX_Color1u32(0xFFFFFFFF);
+        GX_TexCoord2f32(1.0f,1.0f);
+        GX_Position3f32(-BEAM_SIZE_SHOTS + beam.x,-BEAM_SIZE_SHOTS + beam.y,BEAM_SIZE_SHOTS + beam.z);
+        GX_Color1u32(0xFFFFFFFF);
+        GX_TexCoord2f32(0.0f,1.0f);
+
+        GX_Position3f32(BEAM_SIZE_SHOTS + beam.x,BEAM_SIZE_SHOTS + beam.y,-BEAM_SIZE_SHOTS + beam.z);
+        GX_Color1u32(0xFFFFFFFF);
+        GX_TexCoord2f32(0.0f,0.0f);
+        GX_Position3f32(-BEAM_SIZE_SHOTS + beam.x,BEAM_SIZE_SHOTS + beam.y,-BEAM_SIZE_SHOTS + beam.z);
+        GX_Color1u32(0xFFFFFFFF);
+        GX_TexCoord2f32(1.0f,0.0f);
+        GX_Position3f32(-BEAM_SIZE_SHOTS + beam.x,-BEAM_SIZE_SHOTS + beam.y,-BEAM_SIZE_SHOTS + beam.z);
+        GX_Color1u32(0xFFFFFFFF);
+        GX_TexCoord2f32(1.0f,1.0f);
+        GX_Position3f32(BEAM_SIZE_SHOTS + beam.x,-BEAM_SIZE_SHOTS + beam.y,-BEAM_SIZE_SHOTS + beam.z);
+        GX_Color1u32(0xFFFFFFFF);
+        GX_TexCoord2f32(0.0f,1.0f);
+
+        GX_Position3f32(BEAM_SIZE_SHOTS + beam.x,BEAM_SIZE_SHOTS + beam.y,BEAM_SIZE_SHOTS + beam.z);
+        GX_Color1u32(0xFFFFFFFF);
+        GX_TexCoord2f32(0.0f,0.0f);
+        GX_Position3f32(BEAM_SIZE_SHOTS + beam.x,BEAM_SIZE_SHOTS + beam.y,-BEAM_SIZE_SHOTS + beam.z);
+        GX_Color1u32(0xFFFFFFFF);
+        GX_TexCoord2f32(1.0f,0.0f);
+        GX_Position3f32(BEAM_SIZE_SHOTS + beam.x,-BEAM_SIZE_SHOTS + beam.y,-BEAM_SIZE_SHOTS + beam.z);
+        GX_Color1u32(0xFFFFFFFF);
+        GX_TexCoord2f32(1.0f,1.0f);
+        GX_Position3f32(BEAM_SIZE_SHOTS + beam.x,-BEAM_SIZE_SHOTS + beam.y,BEAM_SIZE_SHOTS + beam.z);
+        GX_Color1u32(0xFFFFFFFF);
+        GX_TexCoord2f32(0.0f,1.0f);
+
+        GX_Position3f32(-BEAM_SIZE_SHOTS + beam.x,BEAM_SIZE_SHOTS + beam.y,-BEAM_SIZE_SHOTS + beam.z);
+        GX_Color1u32(0xFFFFFFFF);
+        GX_TexCoord2f32(0.0f,0.0f);
+        GX_Position3f32(-BEAM_SIZE_SHOTS + beam.x,BEAM_SIZE_SHOTS + beam.y,BEAM_SIZE_SHOTS + beam.z);
+        GX_Color1u32(0xFFFFFFFF);
+        GX_TexCoord2f32(1.0f,0.0f);
+        GX_Position3f32(-BEAM_SIZE_SHOTS + beam.x,-BEAM_SIZE_SHOTS + beam.y,BEAM_SIZE_SHOTS + beam.z);
+        GX_Color1u32(0xFFFFFFFF);
+        GX_TexCoord2f32(1.0f,1.0f);
+        GX_Position3f32(-BEAM_SIZE_SHOTS + beam.x,-BEAM_SIZE_SHOTS + beam.y,-BEAM_SIZE_SHOTS + beam.z);
+        GX_Color1u32(0xFFFFFFFF);
+        GX_TexCoord2f32(0.0f,1.0f);
+
+        GX_Position3f32(-BEAM_SIZE_SHOTS + beam.x,BEAM_SIZE_SHOTS + beam.y,-BEAM_SIZE_SHOTS + beam.z);
+        GX_Color1u32(0xFFFFFFFF);
+        GX_TexCoord2f32(0.0f,0.0f);
+        GX_Position3f32(BEAM_SIZE_SHOTS + beam.x,BEAM_SIZE_SHOTS + beam.y,-BEAM_SIZE_SHOTS + beam.z);
+        GX_Color1u32(0xFFFFFFFF);
+        GX_TexCoord2f32(1.0f,0.0f);
+        GX_Position3f32(BEAM_SIZE_SHOTS + beam.x,BEAM_SIZE_SHOTS + beam.y,BEAM_SIZE_SHOTS + beam.z);
+        GX_Color1u32(0xFFFFFFFF);
+        GX_TexCoord2f32(1.0f,1.0f);
+        GX_Position3f32(-BEAM_SIZE_SHOTS + beam.x,BEAM_SIZE_SHOTS + beam.y,BEAM_SIZE_SHOTS + beam.z);
+        GX_Color1u32(0xFFFFFFFF);
+        GX_TexCoord2f32(0.0f,1.0f);
+
+        GX_Position3f32(BEAM_SIZE_SHOTS + beam.x,-BEAM_SIZE_SHOTS + beam.y,-BEAM_SIZE_SHOTS + beam.z);
+        GX_Color1u32(0xFFFFFFFF);
+        GX_TexCoord2f32(0.0f,0.0f);
+        GX_Position3f32(-BEAM_SIZE_SHOTS + beam.x,-BEAM_SIZE_SHOTS + beam.y,-BEAM_SIZE_SHOTS + beam.z);
+        GX_Color1u32(0xFFFFFFFF);
+        GX_TexCoord2f32(1.0f,0.0f);
+        GX_Position3f32(-BEAM_SIZE_SHOTS + beam.x,-BEAM_SIZE_SHOTS + beam.y,BEAM_SIZE_SHOTS + beam.z);
+        GX_Color1u32(0xFFFFFFFF);
+        GX_TexCoord2f32(1.0f,1.0f);
+        GX_Position3f32(BEAM_SIZE_SHOTS + beam.x,-BEAM_SIZE_SHOTS + beam.y,BEAM_SIZE_SHOTS + beam.z);
         GX_Color1u32(0xFFFFFFFF);
         GX_TexCoord2f32(0.0f,1.0f);
     }
