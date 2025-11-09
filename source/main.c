@@ -51,7 +51,7 @@ int main(int argc, char **argv) {
     float playerZ = -10.0f;
 
     float speed = 0.0f;
-    float playerAcc = .0002f;
+    float playerAcc = .00910f;
     float drag = .001f;
     float sensitivity = .002f;
     float lookRightAmount = 0.0f;
@@ -66,6 +66,11 @@ int main(int argc, char **argv) {
     loadYstars();
 
     srand(time(NULL));
+
+    bool autoPilot = false;
+    void toggleAutoPilot(){
+        autoPilot = !autoPilot;
+    }
 
     while(1) {
         long long timeLongLong = timeInMilliseconds();
@@ -84,6 +89,15 @@ int main(int argc, char **argv) {
         sprintf(strFPS_Num, "%d", fps);
         strcat(strFPS,strFPS_Num);
 
+        if(abs(playerX) > 125 || abs(playerY) > 125 || abs(playerZ) > 125){
+            //move stars beams and special
+            moveStarsBeamsSpecial(-playerX,-playerY,-playerZ);
+            playerX = 0;
+            playerY = 0;
+            playerZ = 0;
+        }
+
+        bool moveIt = false;
         WPAD_ScanPads();  // Scan the Wiimotes
         GRRLIB_2dMode();
         // If [HOME] was pressed on the first Wiimote, break out of the loop
@@ -109,11 +123,17 @@ int main(int argc, char **argv) {
             //playerX += speed * timePassedSinceLastFrame;
             lookRightAmount += (sensitivity * timePassedSinceLastFrame);
         }
-        if(buttonsHeld & WPAD_BUTTON_1 || buttonsDown & WPAD_BUTTON_1){
+        if(buttonsHeld & WPAD_BUTTON_1){
+            moveIt = true;
+        }
+        if(buttonsDown & WPAD_BUTTON_PLUS){
+            toggleAutoPilot();
+        }
+        if(moveIt || autoPilot){
             speed += (playerAcc * timePassedSinceLastFrame);
         }
         //if(buttonsHeld & WPAD_BUTTON_2 || buttonsDown & WPAD_BUTTON_2){
-            beamBlocks(rand() % 500 - 250,rand() % 500 - 250,rand() % 500 - 250,timePassedSinceLastFrame);
+            beamBlocks(rand() % 2000 - 1000,rand() % 2000 - 1000,rand() % 2000 - 1000,timePassedSinceLastFrame);
             special(timePassedSinceLastFrame);
         //}
         speed -= (speed * drag * timePassedSinceLastFrame);
@@ -126,16 +146,48 @@ int main(int argc, char **argv) {
         //while(lookRightAmount < 0.0f){
         //    lookRightAmount += (2 * MY_PI);
         //}
-        double quarterRotation = MY_PI / 2.0d - .1d;
+        double quarterRotation = MY_PI / 2.0d - .01d;
         if(lookUpAmount > quarterRotation){
             lookUpAmount = quarterRotation;
         }
         if(lookUpAmount < -quarterRotation){
             lookUpAmount = -quarterRotation;
         }
-        float xLookTarget = -sin(lookRightAmount);
-        float zLookTarget = cos(lookRightAmount);
-        float yLookTarget = tan(lookUpAmount);//
+
+        double cosa = cos(0);//yaw
+        double sina = sin(0);
+
+        double cosb = cos(-lookRightAmount);//pitch
+        double sinb = sin(-lookRightAmount);
+
+        double cosc = cos(-lookUpAmount);//roll
+        double sinc = sin(-lookUpAmount);
+
+        double Axx = cosa*cosb;
+        double Axy = cosa*sinb*sinc - sina*cosc;
+        double Axz = cosa*sinb*cosc + sina*sinc;
+
+        double Ayx = sina*cosb;
+        double Ayy = sina*sinb*sinc + cosa*cosc;
+        double Ayz = sina*sinb*cosc - cosa*sinc;
+
+        double Azx = -sinb;
+        double Azy = cosb*sinc;
+        double Azz = cosb*cosc;
+
+        double px = 0;
+        double py = 0;
+        double pz = 1;
+
+        float xLookTarget = Axx*px + Axy*py + Axz*pz;
+        float yLookTarget = Ayx*px + Ayy*py + Ayz*pz;
+        float zLookTarget = Azx*px + Azy*py + Azz*pz;
+
+
+
+        //float xLookTarget = -sin(lookRightAmount);
+        //float zLookTarget = cos(lookRightAmount);
+        //float yLookTarget = tan(lookUpAmount);//
         playerX = playerX + (speed * xLookTarget);
         playerY = playerY + (speed * yLookTarget);
         playerZ = playerZ + (speed * zLookTarget);
@@ -149,14 +201,14 @@ int main(int argc, char **argv) {
         // Place your drawing code here
         // ---------------------------------------------------------------------
 
-        char strTest[10];
-        sprintf(strTest, "%d", howManyBeamsTest);
+        //char strTest[10];
+        //sprintf(strTest, "%d", howManyBeamsTest);
 
         GRRLIB_Printf(20, 20, tex_font, 0xFFFFFFFF, 1, "HELLO WORLD!");
         GRRLIB_Printf(20, 36, tex_font, 0xFFFFFFFF, 1, strTime);
         GRRLIB_Printf(20, 52, tex_font, 0xFFFFFFFF, 1, strFPS);
         //GRRLIB_Printf(20, 36, tex_font, 0xFFFFFFFF, 1, strMath);
-        GRRLIB_Printf(20, 68, tex_font, 0xFFFFFFFF, 1, strTest);
+        //GRRLIB_Printf(20, 68, tex_font, 0xFFFFFFFF, 1, strTest);
 
         //char* source_pointer = get_static_string();
         //char destination_array[101]; // SIZE must be large enough to hold the string, including the null terminator.
@@ -165,22 +217,22 @@ int main(int argc, char **argv) {
 
 
 
-        GRRLIB_3dMode(0.1, 1000, 100, 1, 0);
+        GRRLIB_3dMode(0.1, 1000, 120, 1, 0);
         GRRLIB_SetBlend(GRRLIB_BLEND_ALPHA);
         int howManyBeams = loadBeams(timePassedSinceLastFrame);
         int howManyBeamsSpecial = loadBeamsSpecial(timePassedSinceLastFrame);
         howManyBeamsTest = howManyBeams + howManyBeamsSpecial;
 
-        GRRLIB_ObjectView(0,0,0,0,0,0,.2f,.2f,.2f);
+        GRRLIB_ObjectView(0,0,0,0,0,0,1.0f,1.0f,1.0f);
         GRRLIB_SetTexture(tex_ystar, FALSE);
-        GX_Begin(GX_QUADS, GX_VTXFMT0, 42 * 24);//42 ystars
+        GX_Begin(GX_QUADS, GX_VTXFMT0, 50 * 24);//50 ystars
 
         drawY_Stars();
 
         GX_End();
 
 
-        GRRLIB_ObjectView(0,0,0,0,0,0,.2f,.2f,.2f);
+        GRRLIB_ObjectView(0,0,0,0,0,0,1.0f,1.0f,1.0f);
         GRRLIB_SetTexture(tex_boxes_invert, FALSE);
         GX_Begin(GX_QUADS, GX_VTXFMT0, howManyBeams * 24);
 
@@ -188,7 +240,7 @@ int main(int argc, char **argv) {
 
         GX_End();
 
-        GRRLIB_ObjectView(0,0,0,0,0,0,.2f,.2f,.2f);
+        GRRLIB_ObjectView(0,0,0,0,0,0,1.0f,1.0f,1.0f);
         GRRLIB_SetTexture(tex_ystar, FALSE);
         GX_Begin(GX_QUADS, GX_VTXFMT0, howManyBeamsSpecial * 24);
 

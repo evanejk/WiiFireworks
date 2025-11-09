@@ -2,6 +2,7 @@
 #include <grrlib.h>
 #include <string>
 #include <cctype>    // Required for ::toupper
+#include <math.h>
 
 #include "hellocpp.h"
 #include "Beam.h"
@@ -10,8 +11,8 @@
 static std::vector<Y_Star> yStars;
 void loadYstars(){
     srand(time(NULL));
-    for(int i = 0; i < 42;i++){
-        yStars.push_back(Y_Star(rand() % 500 - 250,rand() % 500 - 250,rand() % 500 - 250));
+    for(int i = 0; i < 50;i++){
+        yStars.push_back(Y_Star(rand() % 2000 - 1000,rand() % 2000 - 1000,rand() % 2000 - 1000));
     }
 }
 
@@ -43,7 +44,7 @@ char *get_static_string() {
 
 
 static std::vector<Beam> beams;
-int reloadingSpeed = 200;
+int reloadingSpeed = 142;
 int reloadingTimer = reloadingSpeed;
 void beamBlocks(float fromX, float fromY, float fromZ, int timePassed){
     reloadingTimer -= timePassed;
@@ -79,7 +80,86 @@ void special(int timePassed){
     }
 }
 
-float beamSpeed = .2f;
+double calculateDistance(float x1, float y1, float z1, float x2, float y2, float z2) {
+    double dx = x2 - x1;
+    double dy = y2 - y1;
+    double dz = z2 - z1;
+    return std::sqrt(std::pow(dx, 2) + std::pow(dy, 2) + std::pow(dz, 2));
+}
+
+void moveStarsBeamsSpecial(float moveX, float moveY, float moveZ){
+    for(Block& block:yStars){
+        block.x += moveX;
+        block.y += moveY;
+        block.z += moveZ;
+        if(block.x > 1000){
+            block.x -= 2000;
+        }
+        if(block.x < -1000){
+            block.x += 2000;
+        }
+        if(block.y > 1000){
+            block.y -= 2000;
+        }
+        if(block.y < -1000){
+            block.y += 2000;
+        }
+        if(block.z > 1000){
+            block.z -= 2000;
+        }
+        if(block.z < -1000){
+            block.z += 2000;
+        }
+    }
+    for(Block& block:beams){
+        block.x += moveX;
+        block.y += moveY;
+        block.z += moveZ;
+        if(block.x > 1000){
+            block.x -= 2000;
+        }
+        if(block.x < -1000){
+            block.x += 2000;
+        }
+        if(block.y > 1000){
+            block.y -= 2000;
+        }
+        if(block.y < -1000){
+            block.y += 2000;
+        }
+        if(block.z > 1000){
+            block.z -= 2000;
+        }
+        if(block.z < -1000){
+            block.z += 2000;
+        }
+    }
+    for(Block& block:specialBeams){
+        block.x += moveX;
+        block.y += moveY;
+        block.z += moveZ;
+        if(block.x > 1000){
+            block.x -= 2000;
+        }
+        if(block.x < -1000){
+            block.x += 2000;
+        }
+        if(block.y > 1000){
+            block.y -= 2000;
+        }
+        if(block.y < -1000){
+            block.y += 2000;
+        }
+        if(block.z > 1000){
+            block.z -= 2000;
+        }
+        if(block.z < -1000){
+            block.z += 2000;
+        }
+    }
+}
+
+float beamSpeed = .42f;
 int loadBeams(int timePassed){
    std::vector<Beam> newBeamsList;
     long speed = beamSpeed * ((float)timePassed);
@@ -112,7 +192,7 @@ int loadBeamsSpecial(int timePassed){
     specialBeams = newBeamsListSpecial;
     return specialBeams.size();
 }
-const float BEAM_SIZE = 1.42f;
+const float BEAM_SIZE = 4.20f;
 void drawBeams(){
     for(Beam& beam:beams){
         GX_Position3f32(-BEAM_SIZE + beam.x,BEAM_SIZE + beam.y,BEAM_SIZE + beam.z);
@@ -194,7 +274,7 @@ void drawBeams(){
         GX_TexCoord2f32(0.0f,1.0f);
     }
 }
-const float BEAM_SIZE_SPECIAL = .5f;
+const float BEAM_SIZE_SPECIAL = 1.20f;
 void drawBeamsSpecial(){
     for(Beam& beam:specialBeams){
         GX_Position3f32(-BEAM_SIZE_SPECIAL + beam.x,BEAM_SIZE_SPECIAL + beam.y,BEAM_SIZE_SPECIAL + beam.z);
@@ -276,7 +356,7 @@ void drawBeamsSpecial(){
         GX_TexCoord2f32(0.0f,1.0f);
     }
 }
-const float BEAM_SIZE_Y_STARS = 1.42f;
+const float BEAM_SIZE_Y_STARS = 9.10f;
 void drawY_Stars(){
     for(Block& beam:yStars){
         GX_Position3f32(-BEAM_SIZE_Y_STARS + beam.x,BEAM_SIZE_Y_STARS + beam.y,BEAM_SIZE_Y_STARS + beam.z);

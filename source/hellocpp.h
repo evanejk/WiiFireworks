@@ -11,6 +11,7 @@
     char *get_static_string();
     void loadYstars();
     void drawY_Stars();
+    void moveStarsBeamsSpecial(float moveX, float moveY, float moveZ);
     #ifdef __cplusplus
     }
     #endif
