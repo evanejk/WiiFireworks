@@ -70,6 +70,8 @@
 		<Unit filename="source/Beam.h" />
 		<Unit filename="source/Block.cpp" />
 		<Unit filename="source/Block.h" />
+		<Unit filename="source/Shot.cpp" />
+		<Unit filename="source/Shot.h" />
 		<Unit filename="source/Y_Star.cpp" />
 		<Unit filename="source/Y_Star.h" />
 		<Unit filename="source/hellocpp.cpp" />

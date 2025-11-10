@@ -43,24 +43,22 @@ char *get_static_string() {
 
 
 
-
 static std::vector<Beam> beams;
-int reloadingSpeed = 142;
-int reloadingTimer = reloadingSpeed;
-void beamBlocks(float fromX, float fromY, float fromZ, int timePassed){
-    reloadingTimer -= timePassed;
-    if(reloadingTimer <= 0){
+long long reloadingSpeed = 142;
+long long reloadedTime = 0;
+void beamBlocks(float fromX, float fromY, float fromZ, long long currentTime){
+    if(reloadedTime <= currentTime){
         beams.push_back(Beam(fromX,fromY,fromZ,0,1,0));
         beams.push_back(Beam(fromX,fromY,fromZ,1,0,0));
         beams.push_back(Beam(fromX,fromY,fromZ,0,-1,0));
         beams.push_back(Beam(fromX,fromY,fromZ,-1,0,0));
         beams.push_back(Beam(fromX,fromY,fromZ,0,0,1));
         beams.push_back(Beam(fromX,fromY,fromZ,0,0,-1));
-        reloadingTimer = reloadingSpeed;
+        reloadedTime = currentTime + reloadingSpeed;
     }
 }
 static std::vector<Beam> specialBeams;
-int specialReloadingSpeed = 3000;
+/*int specialReloadingSpeed = 3000;
 int specialReloadingTimer = specialReloadingSpeed;
 void special(int timePassed){
     specialReloadingTimer -= timePassed;
@@ -79,7 +77,7 @@ void special(int timePassed){
         }
         specialReloadingTimer = specialReloadingSpeed;
     }
-}
+}*/
 
 static std::vector<Shot> shots;
 int shotReloadingSpeed = 200;
@@ -227,7 +225,16 @@ int loadBeams(int timePassed){
     long speed = beamSpeed * ((float)timePassed);
     for(Beam& beam:beams){
         beam.timer += timePassed;
-        if(beam.timer > 1000){
+        if(beam.timer > 500){
+            float fromX = beam.x;
+            float fromY = beam.y;
+            float fromZ = beam.z;
+            specialBeams.push_back(Beam(fromX,fromY,fromZ,0,1,0));
+            specialBeams.push_back(Beam(fromX,fromY,fromZ,1,0,0));
+            specialBeams.push_back(Beam(fromX,fromY,fromZ,0,-1,0));
+            specialBeams.push_back(Beam(fromX,fromY,fromZ,-1,0,0));
+            specialBeams.push_back(Beam(fromX,fromY,fromZ,0,0,1));
+            specialBeams.push_back(Beam(fromX,fromY,fromZ,0,0,-1));
             continue;
         }
         beam.x = beam.x + (beam.xAcc * speed);
@@ -243,7 +250,7 @@ int loadBeamsSpecial(int timePassed){
     std::vector<Beam> newBeamsListSpecial;
     for(Beam& beam:specialBeams){
         beam.timer += timePassed;
-        if(beam.timer > 1000){
+        if(beam.timer > 500){
             continue;
         }
         beam.x = beam.x + (beam.xAcc * speed);
@@ -500,7 +507,7 @@ void drawY_Stars(){
         GX_TexCoord2f32(0.0f,1.0f);
     }
 }
-const float BEAM_SIZE_SHOTS = 9.10f;
+const float BEAM_SIZE_SHOTS = 4.20f;
 void drawShots(){
     for(Block& beam:shots){
         GX_Position3f32(-BEAM_SIZE_SHOTS + beam.x,BEAM_SIZE_SHOTS + beam.y,BEAM_SIZE_SHOTS + beam.z);

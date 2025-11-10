@@ -136,8 +136,8 @@ int main(int argc, char **argv) {
             speed += (playerAcc * timePassedSinceLastFrame);
         }
         //if(buttonsHeld & WPAD_BUTTON_2 || buttonsDown & WPAD_BUTTON_2){
-            beamBlocks(rand() % 2000 - 1000,rand() % 2000 - 1000,rand() % 2000 - 1000,timePassedSinceLastFrame);
-            special(timePassedSinceLastFrame);
+            beamBlocks(rand() % 2000 - 1000,rand() % 2000 - 1000,rand() % 2000 - 1000,timeLongLong);
+            //special(timePassedSinceLastFrame);
         //}
         speed -= (speed * drag * timePassedSinceLastFrame);
         if(speed < 0){
@@ -248,7 +248,7 @@ int main(int argc, char **argv) {
         GX_End();
 
         GRRLIB_ObjectView(0,0,0,0,0,0,1.0f,1.0f,1.0f);
-        GRRLIB_SetTexture(tex_ystar, FALSE);
+        GRRLIB_SetTexture(tex_boxes_invert, FALSE);
         GX_Begin(GX_QUADS, GX_VTXFMT0, howManyBeamsSpecial * 24);
 
         drawBeamsSpecial();
