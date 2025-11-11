@@ -10,6 +10,7 @@
 #include "font_png.h"
 #include "ystar_jpg.h"
 #include "boxes_jpg.h"
+#include "cross_png.h"
 #include "boxesInvert_jpg.h"
 #include "shot_jpg.h"
 #include "hellocpp.h"
@@ -36,6 +37,7 @@ int main(int argc, char **argv) {
     GRRLIB_texImg *tex_boxes_invert = GRRLIB_LoadTexture(boxesInvert_jpg);
     GRRLIB_texImg *tex_ystar = GRRLIB_LoadTexture(ystar_jpg);
     GRRLIB_texImg *tex_shot = GRRLIB_LoadTexture(shot_jpg);
+    GRRLIB_texImg *tex_cross = GRRLIB_LoadTexture(cross_png);
 
 
 
@@ -263,6 +265,9 @@ int main(int argc, char **argv) {
         drawShots();
 
         GX_End();
+
+
+        GRRLIB_DrawImg(-10, -10, tex_cross, 0, 1, 1, 0xFFFFFFFF);  // Draw a picture
 
 
         GRRLIB_Render();  // Render the frame buffer to the TV

@@ -63,6 +63,7 @@
 		<Unit filename="Makefile" />
 		<Unit filename="data/boxes.jpg" />
 		<Unit filename="data/boxesInvert.jpg" />
+		<Unit filename="data/cross.png" />
 		<Unit filename="data/font.png" />
 		<Unit filename="data/shot.jpg" />
 		<Unit filename="data/ystar.jpg" />
