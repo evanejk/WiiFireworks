@@ -15,6 +15,7 @@
 #include "shot_jpg.h"
 #include "hellocpp.h"
 
+
 const double MY_PI = 3.14159265358979323846; // Or higher precision
 
 long long timeInMilliseconds() {
@@ -54,6 +55,12 @@ int main(int argc, char **argv) {
     float playerX = 0.0f;
     float playerY = 0.0f;
     float playerZ = -10.0f;
+
+
+    float cameraX = 0.0f;
+    float cameraY = 0.0f;
+    float cameraZ = 0.0f;
+
 
     float speed = 0.0f;
     float playerAcc = .00910f;
@@ -137,7 +144,7 @@ int main(int argc, char **argv) {
         if(moveIt || autoPilot){
             speed += (playerAcc * timePassedSinceLastFrame);
         }
-        //if(buttonsHeld & WPAD_BUTTON_2 || buttonsDown & WPAD_BUTTON_2){
+        //if(buttonsHeld & WPAD_BUTTON_2){
             beamBlocks(rand() % 2000 - 1000,rand() % 2000 - 1000,rand() % 2000 - 1000,timeLongLong);
             //special(timePassedSinceLastFrame);
         //}
@@ -145,12 +152,7 @@ int main(int argc, char **argv) {
         if(speed < 0){
             speed = 0;
         }
-        //while(lookRightAmount > 2 * MY_PI){
-        //    lookRightAmount -= (2 * MY_PI);
-        //}
-        //while(lookRightAmount < 0.0f){
-        //    lookRightAmount += (2 * MY_PI);
-        //}
+
         double quarterRotation = MY_PI / 2.0d - .01d;
         if(lookUpAmount > quarterRotation){
             lookUpAmount = quarterRotation;
@@ -189,15 +191,18 @@ int main(int argc, char **argv) {
         float zLookTarget = Azx*px + Azy*py + Azz*pz;
 
         if(buttonsHeld & WPAD_BUTTON_2){
-            shoot(timeLongLong,playerX,playerY,playerZ,xLookTarget,yLookTarget,zLookTarget);
+            shoot(timeLongLong,cameraX,cameraY,cameraZ,xLookTarget,yLookTarget,zLookTarget);
         }
 
-        //float xLookTarget = -sin(lookRightAmount);
-        //float zLookTarget = cos(lookRightAmount);
-        //float yLookTarget = tan(lookUpAmount);//
         playerX = playerX + (speed * xLookTarget);
         playerY = playerY + (speed * yLookTarget);
         playerZ = playerZ + (speed * zLookTarget);
+
+        cameraX = playerX + (xLookTarget * .01f);//attempt to make shots more accurate
+        cameraY = playerY + (yLookTarget * .01f);//because the mvp matrix starts at .01
+        cameraZ = playerZ + (zLookTarget * .01f);//and cannot start at 0
+                                                 //but couldn't an extra matrix be added to the mvp to fix this? to like move everything back .01
+
         xLookTarget += playerX;
         yLookTarget += playerY;
         zLookTarget += playerZ;

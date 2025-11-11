@@ -16,6 +16,7 @@
     void drawY_Stars();
     void moveStarsBeamsSpecialEtc(float moveX, float moveY, float moveZ);
     void loopAroundOutOfBoundsWorldObjects();
+    double calculateDistance(float x1, float y1, float z1, float x2, float y2, float z2);
     #ifdef __cplusplus
     }
     #endif
