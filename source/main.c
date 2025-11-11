@@ -224,9 +224,9 @@ int main(int argc, char **argv) {
 
         GRRLIB_3dMode(0.1, 2000, 120, 1, 0);
         GRRLIB_SetBlend(GRRLIB_BLEND_ALPHA);
+        int howManyShots = loadShots(timeLongLong,timePassedSinceLastFrame);
         int howManyBeams = loadBeams(timePassedSinceLastFrame);
         int howManyBeamsSpecial = loadBeamsSpecial(timePassedSinceLastFrame);
-        int howManyShots = loadShots(timeLongLong,timePassedSinceLastFrame);
 
         howManyBeamsTest = howManyBeams + howManyBeamsSpecial;
 

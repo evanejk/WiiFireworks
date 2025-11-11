@@ -9,6 +9,9 @@
 #include "Y_Star.h"
 #include "Shot.h"
 
+const float BEAM_SIZE_SHOTS = 4.20f;
+
+
 static std::vector<Y_Star> yStars;
 void loadYstars(){
     srand(time(NULL));
@@ -38,11 +41,6 @@ char *get_static_string() {
     return buffer;
 }
 
-
-
-
-
-
 static std::vector<Beam> beams;
 long long reloadingSpeed = 142;
 long long reloadedTime = 0;
@@ -58,27 +56,6 @@ void beamBlocks(float fromX, float fromY, float fromZ, long long currentTime){
     }
 }
 static std::vector<Beam> specialBeams;
-/*int specialReloadingSpeed = 3000;
-int specialReloadingTimer = specialReloadingSpeed;
-void special(int timePassed){
-    specialReloadingTimer -= timePassed;
-    if(specialReloadingTimer <= 0){
-        for(Beam beam : beams){
-            float fromX = beam.x;
-            float fromY = beam.y;
-            float fromZ = beam.z;
-            beams.push_back(Beam(fromX,fromY,fromZ,0,1,0));
-            beams.push_back(Beam(fromX,fromY,fromZ,1,0,0));
-            beams.push_back(Beam(fromX,fromY,fromZ,0,-1,0));
-            beams.push_back(Beam(fromX,fromY,fromZ,-1,0,0));
-            beams.push_back(Beam(fromX,fromY,fromZ,0,0,1));
-            beams.push_back(Beam(fromX,fromY,fromZ,0,0,-1));
-
-        }
-        specialReloadingTimer = specialReloadingSpeed;
-    }
-}*/
-
 static std::vector<Shot> shots;
 int shotReloadingSpeed = 200;
 int bulletLifetime = 2000;
@@ -214,7 +191,30 @@ int loadShots(long long currentTime, int timePassed){
         shot.x = shot.x + (shot.xAcc * speed);
         shot.y = shot.y + (shot.yAcc * speed);
         shot.z = shot.z + (shot.zAcc * speed);
+        for(int i = 0;i < yStars.size();i++){
+            Y_Star& yStar = yStars[i];
+            if(calculateDistance(shot.x,shot.y,shot.z,yStar.x,yStar.y,yStar.z) < sqrt(yStar.blockSize * yStar.blockSize) + sqrt(BEAM_SIZE_SHOTS * BEAM_SIZE_SHOTS)){
+                //yStar.blockSize *= 1.42;
+                //if(yStar.blockSize > 50.0f){
+                    //draw explosion
+                    beams.push_back(Beam(yStar.x,yStar.y,yStar.z,0,1,0));
+                    beams.push_back(Beam(yStar.x,yStar.y,yStar.z,1,0,0));
+                    beams.push_back(Beam(yStar.x,yStar.y,yStar.z,0,-1,0));
+                    beams.push_back(Beam(yStar.x,yStar.y,yStar.z,-1,0,0));
+                    beams.push_back(Beam(yStar.x,yStar.y,yStar.z,0,0,1));
+                    beams.push_back(Beam(yStar.x,yStar.y,yStar.z,0,0,-1));
+                    //move the ystar and reset its size
+                    yStar.x = rand() % 2000 - 1000;
+                    yStar.y = rand() % 2000 - 1000;
+                    yStar.z = rand() % 2000 - 1000;
+                    yStar.blockSize = 20.0f;
+                    goto continueOuterLoop0;
+
+                //}
+            }
+        }
         newShotsList.push_back(shot);
+        continueOuterLoop0:
     }
     shots = newShotsList;
     return shots.size();
@@ -425,89 +425,87 @@ void drawBeamsSpecial(){
         GX_TexCoord2f32(0.0f,1.0f);
     }
 }
-const float BEAM_SIZE_Y_STARS = 9.10f;
 void drawY_Stars(){
-    for(Block& beam:yStars){
-        GX_Position3f32(-BEAM_SIZE_Y_STARS + beam.x,BEAM_SIZE_Y_STARS + beam.y,BEAM_SIZE_Y_STARS + beam.z);
+    for(Y_Star& beam:yStars){
+        GX_Position3f32(-beam.blockSize + beam.x,beam.blockSize + beam.y,beam.blockSize + beam.z);
         GX_Color1u32(0xFFFFFFFF);
         GX_TexCoord2f32(0.0f,0.0f);
-        GX_Position3f32(BEAM_SIZE_Y_STARS + beam.x,BEAM_SIZE_Y_STARS + beam.y,BEAM_SIZE_Y_STARS + beam.z);
+        GX_Position3f32(beam.blockSize + beam.x,beam.blockSize + beam.y,beam.blockSize + beam.z);
         GX_Color1u32(0xFFFFFFFF);
         GX_TexCoord2f32(1.0f,0.0f);
-        GX_Position3f32(BEAM_SIZE_Y_STARS + beam.x,-BEAM_SIZE_Y_STARS + beam.y,BEAM_SIZE_Y_STARS + beam.z);
+        GX_Position3f32(beam.blockSize + beam.x,-beam.blockSize + beam.y,beam.blockSize + beam.z);
         GX_Color1u32(0xFFFFFFFF);
         GX_TexCoord2f32(1.0f,1.0f);
-        GX_Position3f32(-BEAM_SIZE_Y_STARS + beam.x,-BEAM_SIZE_Y_STARS + beam.y,BEAM_SIZE_Y_STARS + beam.z);
+        GX_Position3f32(-beam.blockSize + beam.x,-beam.blockSize + beam.y,beam.blockSize + beam.z);
         GX_Color1u32(0xFFFFFFFF);
         GX_TexCoord2f32(0.0f,1.0f);
 
-        GX_Position3f32(BEAM_SIZE_Y_STARS + beam.x,BEAM_SIZE_Y_STARS + beam.y,-BEAM_SIZE_Y_STARS + beam.z);
+        GX_Position3f32(beam.blockSize + beam.x,beam.blockSize + beam.y,-beam.blockSize + beam.z);
         GX_Color1u32(0xFFFFFFFF);
         GX_TexCoord2f32(0.0f,0.0f);
-        GX_Position3f32(-BEAM_SIZE_Y_STARS + beam.x,BEAM_SIZE_Y_STARS + beam.y,-BEAM_SIZE_Y_STARS + beam.z);
+        GX_Position3f32(-beam.blockSize + beam.x,beam.blockSize + beam.y,-beam.blockSize + beam.z);
         GX_Color1u32(0xFFFFFFFF);
         GX_TexCoord2f32(1.0f,0.0f);
-        GX_Position3f32(-BEAM_SIZE_Y_STARS + beam.x,-BEAM_SIZE_Y_STARS + beam.y,-BEAM_SIZE_Y_STARS + beam.z);
+        GX_Position3f32(-beam.blockSize + beam.x,-beam.blockSize + beam.y,-beam.blockSize + beam.z);
         GX_Color1u32(0xFFFFFFFF);
         GX_TexCoord2f32(1.0f,1.0f);
-        GX_Position3f32(BEAM_SIZE_Y_STARS + beam.x,-BEAM_SIZE_Y_STARS + beam.y,-BEAM_SIZE_Y_STARS + beam.z);
+        GX_Position3f32(beam.blockSize + beam.x,-beam.blockSize + beam.y,-beam.blockSize + beam.z);
         GX_Color1u32(0xFFFFFFFF);
         GX_TexCoord2f32(0.0f,1.0f);
 
-        GX_Position3f32(BEAM_SIZE_Y_STARS + beam.x,BEAM_SIZE_Y_STARS + beam.y,BEAM_SIZE_Y_STARS + beam.z);
+        GX_Position3f32(beam.blockSize + beam.x,beam.blockSize + beam.y,beam.blockSize + beam.z);
         GX_Color1u32(0xFFFFFFFF);
         GX_TexCoord2f32(0.0f,0.0f);
-        GX_Position3f32(BEAM_SIZE_Y_STARS + beam.x,BEAM_SIZE_Y_STARS + beam.y,-BEAM_SIZE_Y_STARS + beam.z);
+        GX_Position3f32(beam.blockSize + beam.x,beam.blockSize + beam.y,-beam.blockSize + beam.z);
         GX_Color1u32(0xFFFFFFFF);
         GX_TexCoord2f32(1.0f,0.0f);
-        GX_Position3f32(BEAM_SIZE_Y_STARS + beam.x,-BEAM_SIZE_Y_STARS + beam.y,-BEAM_SIZE_Y_STARS + beam.z);
+        GX_Position3f32(beam.blockSize + beam.x,-beam.blockSize + beam.y,-beam.blockSize + beam.z);
         GX_Color1u32(0xFFFFFFFF);
         GX_TexCoord2f32(1.0f,1.0f);
-        GX_Position3f32(BEAM_SIZE_Y_STARS + beam.x,-BEAM_SIZE_Y_STARS + beam.y,BEAM_SIZE_Y_STARS + beam.z);
+        GX_Position3f32(beam.blockSize + beam.x,-beam.blockSize + beam.y,beam.blockSize + beam.z);
         GX_Color1u32(0xFFFFFFFF);
         GX_TexCoord2f32(0.0f,1.0f);
 
-        GX_Position3f32(-BEAM_SIZE_Y_STARS + beam.x,BEAM_SIZE_Y_STARS + beam.y,-BEAM_SIZE_Y_STARS + beam.z);
+        GX_Position3f32(-beam.blockSize + beam.x,beam.blockSize + beam.y,-beam.blockSize + beam.z);
         GX_Color1u32(0xFFFFFFFF);
         GX_TexCoord2f32(0.0f,0.0f);
-        GX_Position3f32(-BEAM_SIZE_Y_STARS + beam.x,BEAM_SIZE_Y_STARS + beam.y,BEAM_SIZE_Y_STARS + beam.z);
+        GX_Position3f32(-beam.blockSize + beam.x,beam.blockSize + beam.y,beam.blockSize + beam.z);
         GX_Color1u32(0xFFFFFFFF);
         GX_TexCoord2f32(1.0f,0.0f);
-        GX_Position3f32(-BEAM_SIZE_Y_STARS + beam.x,-BEAM_SIZE_Y_STARS + beam.y,BEAM_SIZE_Y_STARS + beam.z);
+        GX_Position3f32(-beam.blockSize + beam.x,-beam.blockSize + beam.y,beam.blockSize + beam.z);
         GX_Color1u32(0xFFFFFFFF);
         GX_TexCoord2f32(1.0f,1.0f);
-        GX_Position3f32(-BEAM_SIZE_Y_STARS + beam.x,-BEAM_SIZE_Y_STARS + beam.y,-BEAM_SIZE_Y_STARS + beam.z);
+        GX_Position3f32(-beam.blockSize + beam.x,-beam.blockSize + beam.y,-beam.blockSize + beam.z);
         GX_Color1u32(0xFFFFFFFF);
         GX_TexCoord2f32(0.0f,1.0f);
 
-        GX_Position3f32(-BEAM_SIZE_Y_STARS + beam.x,BEAM_SIZE_Y_STARS + beam.y,-BEAM_SIZE_Y_STARS + beam.z);
+        GX_Position3f32(-beam.blockSize + beam.x,beam.blockSize + beam.y,-beam.blockSize + beam.z);
         GX_Color1u32(0xFFFFFFFF);
         GX_TexCoord2f32(0.0f,0.0f);
-        GX_Position3f32(BEAM_SIZE_Y_STARS + beam.x,BEAM_SIZE_Y_STARS + beam.y,-BEAM_SIZE_Y_STARS + beam.z);
+        GX_Position3f32(beam.blockSize + beam.x,beam.blockSize + beam.y,-beam.blockSize + beam.z);
         GX_Color1u32(0xFFFFFFFF);
         GX_TexCoord2f32(1.0f,0.0f);
-        GX_Position3f32(BEAM_SIZE_Y_STARS + beam.x,BEAM_SIZE_Y_STARS + beam.y,BEAM_SIZE_Y_STARS + beam.z);
+        GX_Position3f32(beam.blockSize + beam.x,beam.blockSize + beam.y,beam.blockSize + beam.z);
         GX_Color1u32(0xFFFFFFFF);
         GX_TexCoord2f32(1.0f,1.0f);
-        GX_Position3f32(-BEAM_SIZE_Y_STARS + beam.x,BEAM_SIZE_Y_STARS + beam.y,BEAM_SIZE_Y_STARS + beam.z);
+        GX_Position3f32(-beam.blockSize + beam.x,beam.blockSize + beam.y,beam.blockSize + beam.z);
         GX_Color1u32(0xFFFFFFFF);
         GX_TexCoord2f32(0.0f,1.0f);
 
-        GX_Position3f32(BEAM_SIZE_Y_STARS + beam.x,-BEAM_SIZE_Y_STARS + beam.y,-BEAM_SIZE_Y_STARS + beam.z);
+        GX_Position3f32(beam.blockSize + beam.x,-beam.blockSize + beam.y,-beam.blockSize + beam.z);
         GX_Color1u32(0xFFFFFFFF);
         GX_TexCoord2f32(0.0f,0.0f);
-        GX_Position3f32(-BEAM_SIZE_Y_STARS + beam.x,-BEAM_SIZE_Y_STARS + beam.y,-BEAM_SIZE_Y_STARS + beam.z);
+        GX_Position3f32(-beam.blockSize + beam.x,-beam.blockSize + beam.y,-beam.blockSize + beam.z);
         GX_Color1u32(0xFFFFFFFF);
         GX_TexCoord2f32(1.0f,0.0f);
-        GX_Position3f32(-BEAM_SIZE_Y_STARS + beam.x,-BEAM_SIZE_Y_STARS + beam.y,BEAM_SIZE_Y_STARS + beam.z);
+        GX_Position3f32(-beam.blockSize + beam.x,-beam.blockSize + beam.y,beam.blockSize + beam.z);
         GX_Color1u32(0xFFFFFFFF);
         GX_TexCoord2f32(1.0f,1.0f);
-        GX_Position3f32(BEAM_SIZE_Y_STARS + beam.x,-BEAM_SIZE_Y_STARS + beam.y,BEAM_SIZE_Y_STARS + beam.z);
+        GX_Position3f32(beam.blockSize + beam.x,-beam.blockSize + beam.y,beam.blockSize + beam.z);
         GX_Color1u32(0xFFFFFFFF);
         GX_TexCoord2f32(0.0f,1.0f);
     }
 }
-const float BEAM_SIZE_SHOTS = 4.20f;
 void drawShots(){
     for(Block& beam:shots){
         GX_Position3f32(-BEAM_SIZE_SHOTS + beam.x,BEAM_SIZE_SHOTS + beam.y,BEAM_SIZE_SHOTS + beam.z);

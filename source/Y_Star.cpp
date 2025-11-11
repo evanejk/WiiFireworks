@@ -1,9 +1,11 @@
 #include "Y_Star.h"
+#include <math.h>
 
-Y_Star::Y_Star(float x, float y, float z) {
-    this->x = x;
-    this->y = y;
-    this->z = z;
+Y_Star::Y_Star(float fromX, float fromY, float fromZ){
+    x = fromX;
+    y = fromY;
+    z = fromZ;
 
-    //ctor
+    blockSize = 10 + (rand() % 12);
+
 }

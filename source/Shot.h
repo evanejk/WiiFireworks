@@ -3,8 +3,7 @@
 
 #include "Block.h"
 
-class Shot : public Block
-{
+class Shot : public Block{
     public:
         float xAcc;
         float yAcc;
