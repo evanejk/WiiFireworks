@@ -261,7 +261,7 @@ int loadBeamsSpecial(int timePassed){
     specialBeams = newBeamsListSpecial;
     return specialBeams.size();
 }
-const float BEAM_SIZE = 7.10f;
+const float BEAM_SIZE = 9.10f;
 void drawBeams(){
     for(Beam& beam:beams){
         GX_Position3f32(-BEAM_SIZE + beam.x,BEAM_SIZE + beam.y,BEAM_SIZE + beam.z);
@@ -343,7 +343,7 @@ void drawBeams(){
         GX_TexCoord2f32(0.0f,1.0f);
     }
 }
-const float BEAM_SIZE_SPECIAL = 4.20f;
+const float BEAM_SIZE_SPECIAL = 7.10f;
 void drawBeamsSpecial(){
     for(Beam& beam:specialBeams){
         GX_Position3f32(-BEAM_SIZE_SPECIAL + beam.x,BEAM_SIZE_SPECIAL + beam.y,BEAM_SIZE_SPECIAL + beam.z);
@@ -586,4 +586,176 @@ void drawShots(){
         GX_Color1u32(0xFFFFFFFF);
         GX_TexCoord2f32(0.0f,1.0f);
     }
+}
+const float SKYBOX_SIZE = 1000;//change later to big number like 1000
+void drawSky(float x, float y, float z){
+    GX_Position3f32(-SKYBOX_SIZE + x,-SKYBOX_SIZE + y,SKYBOX_SIZE + z); //OO
+    GX_Color1u32(0xFFFFFFFF);                                           //XO
+    GX_TexCoord2f32(0.0f,1.0f);
+        GX_Position3f32(SKYBOX_SIZE + x,-SKYBOX_SIZE + y,SKYBOX_SIZE + z);  //OO
+    GX_Color1u32(0xFFFFFFFF);                                           //OX
+    GX_TexCoord2f32(1.0f,1.0f);
+        GX_Position3f32(SKYBOX_SIZE + x,SKYBOX_SIZE + y,SKYBOX_SIZE + z);   //OX
+    GX_Color1u32(0xFFFFFFFF);                                           //OO
+    GX_TexCoord2f32(1.0f,0.0f);
+    GX_Position3f32(-SKYBOX_SIZE + x,SKYBOX_SIZE + y,SKYBOX_SIZE + z);  //XO
+    GX_Color1u32(0xFFFFFFFF);                                           //OO
+    GX_TexCoord2f32(0.0f,0.0f);
+
+
+
+    GX_Position3f32(SKYBOX_SIZE + x,-SKYBOX_SIZE + y,-SKYBOX_SIZE + z);
+    GX_Color1u32(0xFFFFFFFF);
+    GX_TexCoord2f32(0.0f,1.0f);
+        GX_Position3f32(-SKYBOX_SIZE + x,-SKYBOX_SIZE + y,-SKYBOX_SIZE + z);
+    GX_Color1u32(0xFFFFFFFF);
+    GX_TexCoord2f32(1.0f,1.0f);
+        GX_Position3f32(-SKYBOX_SIZE + x,SKYBOX_SIZE + y,-SKYBOX_SIZE + z);
+    GX_Color1u32(0xFFFFFFFF);
+    GX_TexCoord2f32(1.0f,0.0f);
+    GX_Position3f32(SKYBOX_SIZE + x,SKYBOX_SIZE + y,-SKYBOX_SIZE + z);
+    GX_Color1u32(0xFFFFFFFF);
+    GX_TexCoord2f32(0.0f,0.0f);
+
+
+
+    GX_Position3f32(SKYBOX_SIZE + x,-SKYBOX_SIZE + y,SKYBOX_SIZE + z);
+    GX_Color1u32(0xFFFFFFFF);
+    GX_TexCoord2f32(0.0f,1.0f);
+        GX_Position3f32(SKYBOX_SIZE + x,-SKYBOX_SIZE + y,-SKYBOX_SIZE + z);
+    GX_Color1u32(0xFFFFFFFF);
+    GX_TexCoord2f32(1.0f,1.0f);
+        GX_Position3f32(SKYBOX_SIZE + x,SKYBOX_SIZE + y,-SKYBOX_SIZE + z);
+    GX_Color1u32(0xFFFFFFFF);
+    GX_TexCoord2f32(1.0f,0.0f);
+    GX_Position3f32(SKYBOX_SIZE + x,SKYBOX_SIZE + y,SKYBOX_SIZE + z);
+    GX_Color1u32(0xFFFFFFFF);
+    GX_TexCoord2f32(0.0f,0.0f);
+
+
+
+    GX_Position3f32(-SKYBOX_SIZE + x,-SKYBOX_SIZE + y,-SKYBOX_SIZE + z);
+    GX_Color1u32(0xFFFFFFFF);
+    GX_TexCoord2f32(0.0f,1.0f);
+        GX_Position3f32(-SKYBOX_SIZE + x,-SKYBOX_SIZE + y,SKYBOX_SIZE + z);
+    GX_Color1u32(0xFFFFFFFF);
+    GX_TexCoord2f32(1.0f,1.0f);
+        GX_Position3f32(-SKYBOX_SIZE + x,SKYBOX_SIZE + y,SKYBOX_SIZE + z);
+    GX_Color1u32(0xFFFFFFFF);
+    GX_TexCoord2f32(1.0f,0.0f);
+    GX_Position3f32(-SKYBOX_SIZE + x,SKYBOX_SIZE + y,-SKYBOX_SIZE + z);
+    GX_Color1u32(0xFFFFFFFF);
+    GX_TexCoord2f32(0.0f,0.0f);
+
+
+
+    GX_Position3f32(-SKYBOX_SIZE + x,SKYBOX_SIZE + y,SKYBOX_SIZE + z);
+    GX_Color1u32(0xFFFFFFFF);
+    GX_TexCoord2f32(0.0f,1.0f);
+        GX_Position3f32(SKYBOX_SIZE + x,SKYBOX_SIZE + y,SKYBOX_SIZE + z);
+    GX_Color1u32(0xFFFFFFFF);
+    GX_TexCoord2f32(1.0f,1.0f);
+        GX_Position3f32(SKYBOX_SIZE + x,SKYBOX_SIZE + y,-SKYBOX_SIZE + z);
+    GX_Color1u32(0xFFFFFFFF);
+    GX_TexCoord2f32(1.0f,0.0f);
+    GX_Position3f32(-SKYBOX_SIZE + x,SKYBOX_SIZE + y,-SKYBOX_SIZE + z);
+    GX_Color1u32(0xFFFFFFFF);
+    GX_TexCoord2f32(0.0f,0.0f);
+
+
+
+    GX_Position3f32(SKYBOX_SIZE + x,-SKYBOX_SIZE + y,SKYBOX_SIZE + z);
+    GX_Color1u32(0xFFFFFFFF);
+    GX_TexCoord2f32(0.0f,1.0f);
+        GX_Position3f32(-SKYBOX_SIZE + x,-SKYBOX_SIZE + y,SKYBOX_SIZE + z);
+    GX_Color1u32(0xFFFFFFFF);
+    GX_TexCoord2f32(1.0f,1.0f);
+        GX_Position3f32(-SKYBOX_SIZE + x,-SKYBOX_SIZE + y,-SKYBOX_SIZE + z);
+    GX_Color1u32(0xFFFFFFFF);
+    GX_TexCoord2f32(1.0f,0.0f);
+    GX_Position3f32(SKYBOX_SIZE + x,-SKYBOX_SIZE + y,-SKYBOX_SIZE + z);
+    GX_Color1u32(0xFFFFFFFF);
+    GX_TexCoord2f32(0.0f,0.0f);
+
+
+
+/*
+    GX_Position3f32(-SKYBOX_SIZE + x,SKYBOX_SIZE + y,SKYBOX_SIZE + z);  //XO
+    GX_Color1u32(0xFFFFFFFF);                                           //OO
+    GX_TexCoord2f32(0.0f,0.0f);
+    GX_Position3f32(SKYBOX_SIZE + x,SKYBOX_SIZE + y,SKYBOX_SIZE + z);   //OX
+    GX_Color1u32(0xFFFFFFFF);                                           //OO
+    GX_TexCoord2f32(1.0f,0.0f);
+    GX_Position3f32(SKYBOX_SIZE + x,-SKYBOX_SIZE + y,SKYBOX_SIZE + z);  //OO
+    GX_Color1u32(0xFFFFFFFF);                                           //OX
+    GX_TexCoord2f32(1.0f,1.0f);
+    GX_Position3f32(-SKYBOX_SIZE + x,-SKYBOX_SIZE + y,SKYBOX_SIZE + z); //OO
+    GX_Color1u32(0xFFFFFFFF);                                           //XO
+    GX_TexCoord2f32(0.0f,1.0f);
+
+    GX_Position3f32(SKYBOX_SIZE + x,SKYBOX_SIZE + y,-SKYBOX_SIZE + z);
+    GX_Color1u32(0xFFFFFFFF);
+    GX_TexCoord2f32(0.0f,0.0f);
+    GX_Position3f32(-SKYBOX_SIZE + x,SKYBOX_SIZE + y,-SKYBOX_SIZE + z);
+    GX_Color1u32(0xFFFFFFFF);
+    GX_TexCoord2f32(1.0f,0.0f);
+    GX_Position3f32(-SKYBOX_SIZE + x,-SKYBOX_SIZE + y,-SKYBOX_SIZE + z);
+    GX_Color1u32(0xFFFFFFFF);
+    GX_TexCoord2f32(1.0f,1.0f);
+    GX_Position3f32(SKYBOX_SIZE + x,-SKYBOX_SIZE + y,-SKYBOX_SIZE + z);
+    GX_Color1u32(0xFFFFFFFF);
+    GX_TexCoord2f32(0.0f,1.0f);
+
+    GX_Position3f32(SKYBOX_SIZE + x,SKYBOX_SIZE + y,SKYBOX_SIZE + z);
+    GX_Color1u32(0xFFFFFFFF);
+    GX_TexCoord2f32(0.0f,0.0f);
+    GX_Position3f32(SKYBOX_SIZE + x,SKYBOX_SIZE + y,-SKYBOX_SIZE + z);
+    GX_Color1u32(0xFFFFFFFF);
+    GX_TexCoord2f32(1.0f,0.0f);
+    GX_Position3f32(SKYBOX_SIZE + x,-SKYBOX_SIZE + y,-SKYBOX_SIZE + z);
+    GX_Color1u32(0xFFFFFFFF);
+    GX_TexCoord2f32(1.0f,1.0f);
+    GX_Position3f32(SKYBOX_SIZE + x,-SKYBOX_SIZE + y,SKYBOX_SIZE + z);
+    GX_Color1u32(0xFFFFFFFF);
+    GX_TexCoord2f32(0.0f,1.0f);
+
+    GX_Position3f32(-SKYBOX_SIZE + x,SKYBOX_SIZE + y,-SKYBOX_SIZE + z);
+    GX_Color1u32(0xFFFFFFFF);
+    GX_TexCoord2f32(0.0f,0.0f);
+    GX_Position3f32(-SKYBOX_SIZE + x,SKYBOX_SIZE + y,SKYBOX_SIZE + z);
+    GX_Color1u32(0xFFFFFFFF);
+    GX_TexCoord2f32(1.0f,0.0f);
+    GX_Position3f32(-SKYBOX_SIZE + x,-SKYBOX_SIZE + y,SKYBOX_SIZE + z);
+    GX_Color1u32(0xFFFFFFFF);
+    GX_TexCoord2f32(1.0f,1.0f);
+    GX_Position3f32(-SKYBOX_SIZE + x,-SKYBOX_SIZE + y,-SKYBOX_SIZE + z);
+    GX_Color1u32(0xFFFFFFFF);
+    GX_TexCoord2f32(0.0f,1.0f);
+
+    GX_Position3f32(-SKYBOX_SIZE + x,SKYBOX_SIZE + y,-SKYBOX_SIZE + z);
+    GX_Color1u32(0xFFFFFFFF);
+    GX_TexCoord2f32(0.0f,0.0f);
+    GX_Position3f32(SKYBOX_SIZE + x,SKYBOX_SIZE + y,-SKYBOX_SIZE + z);
+    GX_Color1u32(0xFFFFFFFF);
+    GX_TexCoord2f32(1.0f,0.0f);
+    GX_Position3f32(SKYBOX_SIZE + x,SKYBOX_SIZE + y,SKYBOX_SIZE + z);
+    GX_Color1u32(0xFFFFFFFF);
+    GX_TexCoord2f32(1.0f,1.0f);
+    GX_Position3f32(-SKYBOX_SIZE + x,SKYBOX_SIZE + y,SKYBOX_SIZE + z);
+    GX_Color1u32(0xFFFFFFFF);
+    GX_TexCoord2f32(0.0f,1.0f);
+
+    GX_Position3f32(SKYBOX_SIZE + x,-SKYBOX_SIZE + y,-SKYBOX_SIZE + z);
+    GX_Color1u32(0xFFFFFFFF);
+    GX_TexCoord2f32(0.0f,0.0f);
+    GX_Position3f32(-SKYBOX_SIZE + x,-SKYBOX_SIZE + y,-SKYBOX_SIZE + z);
+    GX_Color1u32(0xFFFFFFFF);
+    GX_TexCoord2f32(1.0f,0.0f);
+    GX_Position3f32(-SKYBOX_SIZE + x,-SKYBOX_SIZE + y,SKYBOX_SIZE + z);
+    GX_Color1u32(0xFFFFFFFF);
+    GX_TexCoord2f32(1.0f,1.0f);
+    GX_Position3f32(SKYBOX_SIZE + x,-SKYBOX_SIZE + y,SKYBOX_SIZE + z);
+    GX_Color1u32(0xFFFFFFFF);
+    GX_TexCoord2f32(0.0f,1.0f);
+    */
 }

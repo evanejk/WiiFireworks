@@ -8,6 +8,7 @@
 #include <stdio.h>
 #include <sys/time.h>
 #include "font_png.h"
+#include "sky_jpg.h"
 #include "ystar_jpg.h"
 #include "boxes_jpg.h"
 #include "cross_png.h"
@@ -39,10 +40,13 @@ int main(int argc, char **argv) {
     GRRLIB_texImg *tex_ystar = GRRLIB_LoadTexture(ystar_jpg);
     GRRLIB_texImg *tex_shot = GRRLIB_LoadTexture(shot_jpg);
     GRRLIB_texImg *tex_cross = GRRLIB_LoadTexture(cross_png);
+    GRRLIB_texImg *tex_sky = GRRLIB_LoadTexture(sky_jpg);
 
 
 
-    GRRLIB_SetBackgroundColour(0x47, 0x25, 0xA8, 0x22);
+
+    //GRRLIB_SetBackgroundColour(0x47, 0x25, 0xA8, 0x22);
+    GRRLIB_SetBackgroundColour(0x47, 0x0, 0x0, 0x22);
 
     int answer = addNumbers(2,2);//call function from c++ file
     // Declare a character array large enough to hold the number + the null terminator
@@ -272,6 +276,15 @@ int main(int argc, char **argv) {
         GX_End();
 
 
+        GRRLIB_ObjectView(0,0,0,0,0,0,1.0f,1.0f,1.0f);
+        GRRLIB_SetTexture(tex_sky, FALSE);
+        GX_Begin(GX_QUADS, GX_VTXFMT0, 24);
+
+        drawSky(playerX,playerY,playerZ);
+
+        GX_End();
+
+
         GRRLIB_DrawImg(-10, -10, tex_cross, 0, 1, 1, 0xFFFFFFFF);  // Draw a picture
 
 
@@ -283,6 +296,7 @@ int main(int argc, char **argv) {
     GRRLIB_FreeTexture(tex_font);
     GRRLIB_FreeTexture(tex_ystar);
     GRRLIB_FreeTexture(tex_shot);
+    GRRLIB_FreeTexture(tex_sky);
     GRRLIB_Exit(); // clear the memory allocated by GRRLIB
 
     exit(0);  // Use exit() to exit a program, do not use 'return' from main()

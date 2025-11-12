@@ -66,6 +66,8 @@
 		<Unit filename="data/cross.png" />
 		<Unit filename="data/font.png" />
 		<Unit filename="data/shot.jpg" />
+		<Unit filename="data/sky.jpg" />
+		<Unit filename="data/sky.png" />
 		<Unit filename="data/ystar.jpg" />
 		<Unit filename="source/Beam.cpp" />
 		<Unit filename="source/Beam.h" />
