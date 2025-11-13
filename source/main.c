@@ -16,8 +16,7 @@
 #include "shot_jpg.h"
 #include "hellocpp.h"
 
-
-const double MY_PI = 3.14159265358979323846; // Or higher precision
+const double MY_PI = 3.14159265358979323846;
 
 long long timeInMilliseconds() {
     struct timeval tv;
@@ -48,7 +47,7 @@ int main(int argc, char **argv) {
     //GRRLIB_SetBackgroundColour(0x47, 0x25, 0xA8, 0x22);
     GRRLIB_SetBackgroundColour(0x47, 0x0, 0x0, 0x22);
 
-    int answer = addNumbers(2,2);//call function from c++ file
+    //int answer = addNumbers(2,2);//call function from c++ file
     // Declare a character array large enough to hold the number + the null terminator
     //char strMath[20] = "2+2=";
     //char strAnswer[10];
@@ -87,8 +86,17 @@ int main(int argc, char **argv) {
     void toggleAutoPilot(){
         autoPilot = !autoPilot;
     }
+    PAD_Init();
+	//PADStatus pads[4]; // not great for the arrow buttons being smooth
 
     while(1) {
+        WPAD_ScanPads();  // Scan the Wiimotes
+        PAD_ScanPads();
+        int buttonsDownGameCube = PAD_ButtonsDown(0);
+        int buttonsHeldGameCube = PAD_ButtonsHeld(0);
+        // not great for the arrow buttons being smooth on gc controller
+        int stickX = PAD_StickX(0);
+        int stickY = PAD_StickY(0);
         long long timeLongLong = timeInMilliseconds();
         char strTime[20];
         sprintf(strTime, "%llu", timeLongLong);
@@ -114,35 +122,36 @@ int main(int argc, char **argv) {
         }
         loopAroundOutOfBoundsWorldObjects();
         bool moveIt = false;
-        WPAD_ScanPads();  // Scan the Wiimotes
+
         GRRLIB_2dMode();
         // If [HOME] was pressed on the first Wiimote, break out of the loop
         u32 buttonsDown = WPAD_ButtonsDown(0);
-        if (buttonsDown & WPAD_BUTTON_HOME){
+        if (buttonsDown & WPAD_BUTTON_HOME || buttonsDownGameCube & PAD_BUTTON_MENU){
             break;
         }
         u32 buttonsHeld = WPAD_ButtonsHeld(0);
-        if(buttonsHeld & WPAD_BUTTON_RIGHT){//hold wiimote sideways
-            //playerY += speed * timePassedSinceLastFrame;
+        if(buttonsHeld & WPAD_BUTTON_RIGHT || buttonsHeldGameCube & PAD_BUTTON_UP){//hold wiimote sideways
             lookUpAmount += (sensitivity * timePassedSinceLastFrame);
         }
-        if(buttonsHeld & WPAD_BUTTON_LEFT){
-            //playerY -= speed * timePassedSinceLastFrame;
+        if(buttonsHeld & WPAD_BUTTON_LEFT || buttonsHeldGameCube & PAD_BUTTON_DOWN){
             lookUpAmount -= (sensitivity * timePassedSinceLastFrame);
-
         }
-        if(buttonsHeld & WPAD_BUTTON_UP){
-            //playerX -= speed * timePassedSinceLastFrame;
+        if(buttonsHeld & WPAD_BUTTON_UP || buttonsHeldGameCube & PAD_BUTTON_LEFT){
             lookRightAmount -= (sensitivity * timePassedSinceLastFrame);
         }
-        if(buttonsHeld & WPAD_BUTTON_DOWN){
-            //playerX += speed * timePassedSinceLastFrame;
+        if(buttonsHeld & WPAD_BUTTON_DOWN || buttonsHeldGameCube & PAD_BUTTON_RIGHT){
             lookRightAmount += (sensitivity * timePassedSinceLastFrame);
         }
-        if(buttonsHeld & WPAD_BUTTON_1){
+        if( stickX > 18 || stickX < -18){
+            lookRightAmount += (stickX * sensitivity * timePassedSinceLastFrame * .01);
+        }
+        if( stickY > 18 || stickY < -18){
+            lookUpAmount += (stickY * sensitivity * timePassedSinceLastFrame * .01);
+        }
+        if(buttonsHeld & WPAD_BUTTON_1 || buttonsHeldGameCube & PAD_BUTTON_A){
             moveIt = true;
         }
-        if(buttonsDown & WPAD_BUTTON_PLUS){
+        if(buttonsDown & WPAD_BUTTON_PLUS || buttonsDownGameCube & PAD_TRIGGER_Z){
             toggleAutoPilot();
         }
         if(moveIt || autoPilot){
@@ -194,7 +203,7 @@ int main(int argc, char **argv) {
         float yLookTarget = Ayx*px + Ayy*py + Ayz*pz;
         float zLookTarget = Azx*px + Azy*py + Azz*pz;
 
-        if(buttonsHeld & WPAD_BUTTON_2){
+        if(buttonsHeld & WPAD_BUTTON_2 || buttonsHeldGameCube & PAD_TRIGGER_R){
             shoot(timeLongLong,cameraX,cameraY,cameraZ,xLookTarget,yLookTarget,zLookTarget);
         }
 
