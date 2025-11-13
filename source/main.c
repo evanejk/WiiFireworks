@@ -87,7 +87,6 @@ int main(int argc, char **argv) {
         autoPilot = !autoPilot;
     }
     PAD_Init();
-	//PADStatus pads[4]; // not great for the arrow buttons being smooth
 
     while(1) {
         WPAD_ScanPads();  // Scan the Wiimotes
@@ -143,12 +142,12 @@ int main(int argc, char **argv) {
             lookRightAmount += (sensitivity * timePassedSinceLastFrame);
         }
         if( stickX > 18 || stickX < -18){
-            lookRightAmount += (stickX * sensitivity * timePassedSinceLastFrame * .01);
+            lookRightAmount += (stickX * sensitivity * timePassedSinceLastFrame * .00777);
         }
         if( stickY > 18 || stickY < -18){
-            lookUpAmount += (stickY * sensitivity * timePassedSinceLastFrame * .01);
+            lookUpAmount += (stickY * sensitivity * timePassedSinceLastFrame * .00777);
         }
-        if(buttonsHeld & WPAD_BUTTON_1 || buttonsHeldGameCube & PAD_BUTTON_A){
+        if(buttonsHeld & WPAD_BUTTON_1 || buttonsHeldGameCube & PAD_TRIGGER_R){
             moveIt = true;
         }
         if(buttonsDown & WPAD_BUTTON_PLUS || buttonsDownGameCube & PAD_TRIGGER_Z){
@@ -203,7 +202,7 @@ int main(int argc, char **argv) {
         float yLookTarget = Ayx*px + Ayy*py + Ayz*pz;
         float zLookTarget = Azx*px + Azy*py + Azz*pz;
 
-        if(buttonsHeld & WPAD_BUTTON_2 || buttonsHeldGameCube & PAD_TRIGGER_R){
+        if(buttonsHeld & WPAD_BUTTON_2 || buttonsHeldGameCube & PAD_BUTTON_A){
             shoot(timeLongLong,cameraX,cameraY,cameraZ,xLookTarget,yLookTarget,zLookTarget);
         }
 
