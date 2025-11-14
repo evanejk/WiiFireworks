@@ -10,7 +10,6 @@
 #include "font_png.h"
 #include "sky_jpg.h"
 #include "ystar_jpg.h"
-#include "boxes_jpg.h"
 #include "cross_png.h"
 #include "boxesInvert_jpg.h"
 #include "shot_jpg.h"
@@ -148,7 +147,7 @@ int main(int argc, char **argv) {
     GRRLIB_texImg *tex_font = GRRLIB_LoadTexture(font_png);
     GRRLIB_InitTileSet(tex_font, 16, 16, 32);
 
-    GRRLIB_texImg *tex_boxes = GRRLIB_LoadTexture(boxes_jpg);
+
     GRRLIB_texImg *tex_boxes_invert = GRRLIB_LoadTexture(boxesInvert_jpg);
     GRRLIB_texImg *tex_ystar = GRRLIB_LoadTexture(ystar_jpg);
     GRRLIB_texImg *tex_shot = GRRLIB_LoadTexture(shot_jpg);
@@ -244,7 +243,6 @@ int main(int argc, char **argv) {
         loopAroundOutOfBoundsWorldObjects();
         bool moveIt = false;
 
-        GRRLIB_2dMode();
         // If [HOME] was pressed on the first Wiimote, break out of the loop
         u32 buttonsDown = WPAD_ButtonsDown(0);
         if (buttonsDown & WPAD_BUTTON_HOME || buttonsDownGameCube & PAD_BUTTON_MENU){
@@ -302,17 +300,19 @@ int main(int argc, char **argv) {
         Vector3 rotated_forward_vector = quat_rotate_vector(quaternion, forward_vector);
         Vector3 rotated_up_vector = quat_rotate_vector(quaternion, up_vector);
 
-
-
+        float breakAmount = 1;
+        if(buttonsHeld & WPAD_BUTTON_1 || buttonsHeldGameCube & PAD_TRIGGER_L){
+            breakAmount = .5f;
+        }
 
 
         if(buttonsHeld & WPAD_BUTTON_2 || buttonsHeldGameCube & PAD_BUTTON_X || buttonsHeldGameCube & PAD_BUTTON_Y){
             shoot(timeLongLong,playerX,playerY,playerZ,rotated_forward_vector.x,rotated_forward_vector.y,rotated_forward_vector.z);
         }
 
-        playerX = playerX + (speed * rotated_forward_vector.x);
-        playerY = playerY + (speed * rotated_forward_vector.y);
-        playerZ = playerZ + (speed * rotated_forward_vector.z);
+        playerX = playerX + (breakAmount * speed * rotated_forward_vector.x);
+        playerY = playerY + (breakAmount * speed * rotated_forward_vector.y);
+        playerZ = playerZ + (breakAmount * speed * rotated_forward_vector.z);
 
 
 
@@ -334,9 +334,9 @@ int main(int argc, char **argv) {
         //char strTest[10];
         //sprintf(strTest, "%d", howManyBeamsTest);
 
-        GRRLIB_Printf(20, 20, tex_font, 0xFFFFFFFF, 1, "HELLO WORLD!");
-        GRRLIB_Printf(20, 36, tex_font, 0xFFFFFFFF, 1, strTime);
-        GRRLIB_Printf(20, 52, tex_font, 0xFFFFFFFF, 1, strFPS);
+        //GRRLIB_Printf(20, 20, tex_font, 0xFFFFFFFF, 1, "HELLO WORLD!");
+        //GRRLIB_Printf(20, 36, tex_font, 0xFFFFFFFF, 1, strTime);
+
         //GRRLIB_Printf(20, 36, tex_font, 0xFFFFFFFF, 1, strMath);
         //GRRLIB_Printf(20, 68, tex_font, 0xFFFFFFFF, 1, strTest);
 
@@ -344,8 +344,6 @@ int main(int argc, char **argv) {
         //char destination_array[101]; // SIZE must be large enough to hold the string, including the null terminator.
         //snprintf(destination_array, sizeof(destination_array), "%s", source_pointer);
         //GRRLIB_Printf(20, 100, tex_font, 0xFFFFFFFF, 1, destination_array);
-
-
 
         GRRLIB_3dMode(0.1, 2000, 120, 1, 0);
         GRRLIB_SetBlend(GRRLIB_BLEND_ALPHA);
@@ -403,11 +401,16 @@ int main(int argc, char **argv) {
 
         GRRLIB_DrawImg(-10, -10, tex_cross, 0, 1, 1, 0xFFFFFFFF);  // Draw a picture
 
+        GRRLIB_2dMode();
+
+        GRRLIB_Printf(20, 20, tex_font, 0xFFFFFFFF, 1, strFPS);
+
+
+
 
         GRRLIB_Render();  // Render the frame buffer to the TV
 
     }
-    GRRLIB_FreeTexture(tex_boxes);
     GRRLIB_FreeTexture(tex_boxes_invert);
     GRRLIB_FreeTexture(tex_font);
     GRRLIB_FreeTexture(tex_ystar);
