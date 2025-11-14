@@ -255,10 +255,10 @@ int main(int argc, char **argv) {
             rotatePlayerX = (sensitivity * timePassedSinceLastFrame);
         }
         if(buttonsHeld & WPAD_BUTTON_LEFT || buttonsHeldGameCube & PAD_BUTTON_DOWN){
-            rotatePlayerX = (sensitivity * timePassedSinceLastFrame);
+            rotatePlayerX = -(sensitivity * timePassedSinceLastFrame);
         }
         if(buttonsHeld & WPAD_BUTTON_UP || buttonsHeldGameCube & PAD_BUTTON_LEFT){
-            rotatePlayerY = (sensitivity * timePassedSinceLastFrame);
+            rotatePlayerY = -(sensitivity * timePassedSinceLastFrame);
         }
         if(buttonsHeld & WPAD_BUTTON_DOWN || buttonsHeldGameCube & PAD_BUTTON_RIGHT){
             rotatePlayerY = (sensitivity * timePassedSinceLastFrame);
