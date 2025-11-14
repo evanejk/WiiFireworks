@@ -301,7 +301,7 @@ int main(int argc, char **argv) {
         Vector3 rotated_up_vector = quat_rotate_vector(quaternion, up_vector);
 
         float breakAmount = 1;
-        if(buttonsHeld & WPAD_BUTTON_1 || buttonsHeldGameCube & PAD_TRIGGER_L){
+        if(buttonsHeldGameCube & PAD_TRIGGER_L){
             breakAmount = .5f;
         }
 
