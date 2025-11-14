@@ -18,6 +18,120 @@
 
 const double MY_PI = 3.14159265358979323846;
 
+// Define a 3D Vector
+typedef struct {
+    float x, y, z;
+} Vector3;
+
+// Define a Quaternion
+// [w, x, y, z] -> w is the scalar (real) part, (x, y, z) is the vector (imaginary) part
+typedef struct {
+    float w;
+    Vector3 v;
+} Quaternion;
+
+// Dot product of two vectors
+float dot(Vector3 v1, Vector3 v2) {
+    return v1.x * v2.x + v1.y * v2.y + v1.z * v2.z;
+}
+
+// Cross product of two vectors
+Vector3 cross(Vector3 v1, Vector3 v2) {
+    Vector3 result;
+    result.x = v1.y * v2.z - v1.z * v2.y;
+    result.y = v1.z * v2.x - v1.x * v2.z;
+    result.z = v1.x * v2.y - v1.y * v2.x;
+    return result;
+}
+
+// Vector scaling (e.g., v * scalar)
+Vector3 scale(Vector3 v, float s) {
+    Vector3 result;
+    result.x = v.x * s;
+    result.y = v.y * s;
+    result.z = v.z * s;
+    return result;
+}
+
+// Vector addition
+Vector3 add(Vector3 v1, Vector3 v2) {
+    Vector3 result;
+    result.x = v1.x + v2.x;
+    result.y = v1.y + v2.y;
+    result.z = v1.z + v2.z;
+    return result;
+}
+
+// --- Quaternion Functions ---
+
+/**
+ * @brief Creates a quaternion from a normalized axis and an angle (in radians).
+ */
+Quaternion quat_from_axis_angle(Vector3 axis, float angle_rad) {
+    float half_angle = angle_rad / 2.0f;
+    float sin_half = sinf(half_angle);
+
+    Quaternion q;
+    q.w = cosf(half_angle);
+    q.v.x = axis.x * sin_half;
+    q.v.y = axis.y * sin_half;
+    q.v.z = axis.z * sin_half;
+
+    return q;
+}
+
+/**
+ * @brief Returns the conjugate of a quaternion (q*).
+ */
+Quaternion quat_conjugate(Quaternion q) {
+    Quaternion conj;
+    conj.w = q.w;
+    conj.v.x = -q.v.x;
+    conj.v.y = -q.v.y;
+    conj.v.z = -q.v.z;
+    return conj;
+}
+
+/**
+ * @brief Multiplies two quaternions (q_new = q1 * q2).
+ */
+Quaternion quat_multiply(Quaternion q1, Quaternion q2) {
+    Quaternion q_new;
+
+    // w = w1*w2 - dot(v1, v2)
+    q_new.w = q1.w * q2.w - dot(q1.v, q2.v);
+
+    // v = w1*v2 + w2*v1 + cross(v1, v2)
+    Vector3 term1 = scale(q2.v, q1.w); // w1 * v2
+    Vector3 term2 = scale(q1.v, q2.w); // w2 * v1
+    Vector3 term3 = cross(q1.v, q2.v); // v1 x v2
+
+    Vector3 sum = add(term1, term2);
+    q_new.v = add(sum, term3);
+
+    return q_new;
+}
+
+/**
+ * @brief Rotates a 3D vector by the quaternion (v' = q * v_pure * q*).
+ */
+Vector3 quat_rotate_vector(Quaternion q_rot, Vector3 vec) {
+    // 1. Convert 3D vector to a pure quaternion: q_pure = [0, vec.x, vec.y, vec.z]
+    Quaternion q_pure = {0.0f, vec};
+
+    // 2. Compute the conjugate
+    Quaternion q_conj = quat_conjugate(q_rot);
+
+    // 3. Compute q * v_pure
+    Quaternion temp = quat_multiply(q_rot, q_pure);
+
+    // 4. Compute (q * v_pure) * q_conjugate
+    Quaternion q_rotated = quat_multiply(temp, q_conj);
+
+    // 5. The result is the imaginary part (x, y, z)
+    return q_rotated.v;
+}
+
 long long timeInMilliseconds() {
     struct timeval tv;
 
@@ -57,16 +171,11 @@ int main(int argc, char **argv) {
 
     float playerX = 0.0f;
     float playerY = 0.0f;
-    float playerZ = -10.0f;
-
-
-    float cameraX = 0.0f;
-    float cameraY = 0.0f;
-    float cameraZ = 0.0f;
+    float playerZ = 0.0f;
 
 
     float speed = 0.0f;
-    float playerAcc = .00910f;
+    float playerAcc = .00420f;
     float drag = .001f;
     float sensitivity = .002f;
     float lookRightAmount = 0.0f;
@@ -88,7 +197,20 @@ int main(int argc, char **argv) {
     }
     PAD_Init();
 
+    Vector3 x_axis = {1.0f, 0.0f, 0.0f};//axis of rotation
+    Vector3 y_axis = {0.0f, 1.0f, 0.0f};//axis of rotation
+    Vector3 z_axis = {0.0f, 0.0f, 1.0f};//axis of rotation
+    float angle_rad = lookUpAmount;//how much to rotate
+    Quaternion quaternionX = quat_from_axis_angle(x_axis, 0);
+    Quaternion quaternionY = quat_from_axis_angle(y_axis, 0);
+    Quaternion quaternionZ = quat_from_axis_angle(z_axis, 0);
+    Quaternion quaternion = quat_from_axis_angle(x_axis, 0);//just initialize with whatever works
+
+
     while(1) {
+        float rotatePlayerX = 0;
+        float rotatePlayerY = 0;
+        float rotatePlayerZ = 0;
         WPAD_ScanPads();  // Scan the Wiimotes
         PAD_ScanPads();
         int buttonsDownGameCube = PAD_ButtonsDown(0);
@@ -130,24 +252,24 @@ int main(int argc, char **argv) {
         }
         u32 buttonsHeld = WPAD_ButtonsHeld(0);
         if(buttonsHeld & WPAD_BUTTON_RIGHT || buttonsHeldGameCube & PAD_BUTTON_UP){//hold wiimote sideways
-            lookUpAmount += (sensitivity * timePassedSinceLastFrame);
+            rotatePlayerX = (sensitivity * timePassedSinceLastFrame);
         }
         if(buttonsHeld & WPAD_BUTTON_LEFT || buttonsHeldGameCube & PAD_BUTTON_DOWN){
-            lookUpAmount -= (sensitivity * timePassedSinceLastFrame);
+            rotatePlayerX = (sensitivity * timePassedSinceLastFrame);
         }
         if(buttonsHeld & WPAD_BUTTON_UP || buttonsHeldGameCube & PAD_BUTTON_LEFT){
-            lookRightAmount -= (sensitivity * timePassedSinceLastFrame);
+            rotatePlayerY = (sensitivity * timePassedSinceLastFrame);
         }
         if(buttonsHeld & WPAD_BUTTON_DOWN || buttonsHeldGameCube & PAD_BUTTON_RIGHT){
-            lookRightAmount += (sensitivity * timePassedSinceLastFrame);
+            rotatePlayerY = (sensitivity * timePassedSinceLastFrame);
         }
         if( stickX > 18 || stickX < -18){
-            lookRightAmount += (stickX * sensitivity * timePassedSinceLastFrame * .00777);
+            rotatePlayerY = (stickX * sensitivity * timePassedSinceLastFrame * .00777);
         }
         if( stickY > 18 || stickY < -18){
-            lookUpAmount += (stickY * sensitivity * timePassedSinceLastFrame * .00777);
+            rotatePlayerX = (stickY * sensitivity * timePassedSinceLastFrame * .00777);
         }
-        if(buttonsHeld & WPAD_BUTTON_1 || buttonsHeldGameCube & PAD_TRIGGER_R){
+        if(buttonsHeld & WPAD_BUTTON_1 || buttonsHeldGameCube & PAD_BUTTON_A){//PAD_TRIGGER_R
             moveIt = true;
         }
         if(buttonsDown & WPAD_BUTTON_PLUS || buttonsDownGameCube & PAD_TRIGGER_Z){
@@ -165,61 +287,45 @@ int main(int argc, char **argv) {
             speed = 0;
         }
 
-        double quarterRotation = MY_PI / 2.0d - .01d;
-        if(lookUpAmount > quarterRotation){
-            lookUpAmount = quarterRotation;
-        }
-        if(lookUpAmount < -quarterRotation){
-            lookUpAmount = -quarterRotation;
-        }
 
-        double cosa = cos(0);//yaw
-        double sina = sin(0);
+        // Define the directions (vectors) we want to rotate
+        Vector3 forward_vector = {0.0f, 1.0f, 0.0f}; //
+        Vector3 up_vector = {0.0f, 0.0f, 1.0f}; //
 
-        double cosb = cos(-lookRightAmount);//pitch
-        double sinb = sin(-lookRightAmount);
+        quaternionX = quat_from_axis_angle(x_axis, -rotatePlayerX);
+        quaternionY = quat_from_axis_angle(y_axis, rotatePlayerY);
+        quaternionZ = quat_from_axis_angle(z_axis, 0);
+        Quaternion q_delta_frame = quat_multiply(quaternionX,quat_multiply(quaternionY,quaternionZ));
 
-        double cosc = cos(-lookUpAmount);//roll
-        double sinc = sin(-lookUpAmount);
+        quaternion = quat_multiply(quaternion, q_delta_frame);
 
-        double Axx = cosa*cosb;
-        double Axy = cosa*sinb*sinc - sina*cosc;
-        double Axz = cosa*sinb*cosc + sina*sinc;
+        Vector3 rotated_forward_vector = quat_rotate_vector(quaternion, forward_vector);
+        Vector3 rotated_up_vector = quat_rotate_vector(quaternion, up_vector);
 
-        double Ayx = sina*cosb;
-        double Ayy = sina*sinb*sinc + cosa*cosc;
-        double Ayz = sina*sinb*cosc - cosa*sinc;
 
-        double Azx = -sinb;
-        double Azy = cosb*sinc;
-        double Azz = cosb*cosc;
 
-        double px = 0;
-        double py = 0;
-        double pz = 1;
 
-        float xLookTarget = Axx*px + Axy*py + Axz*pz;
-        float yLookTarget = Ayx*px + Ayy*py + Ayz*pz;
-        float zLookTarget = Azx*px + Azy*py + Azz*pz;
 
-        if(buttonsHeld & WPAD_BUTTON_2 || buttonsHeldGameCube & PAD_BUTTON_A){
-            shoot(timeLongLong,cameraX,cameraY,cameraZ,xLookTarget,yLookTarget,zLookTarget);
+        if(buttonsHeld & WPAD_BUTTON_2 || buttonsHeldGameCube & PAD_BUTTON_X || buttonsHeldGameCube & PAD_BUTTON_Y){
+            shoot(timeLongLong,playerX,playerY,playerZ,rotated_forward_vector.x,rotated_forward_vector.y,rotated_forward_vector.z);
         }
 
-        playerX = playerX + (speed * xLookTarget);
-        playerY = playerY + (speed * yLookTarget);
-        playerZ = playerZ + (speed * zLookTarget);
+        playerX = playerX + (speed * rotated_forward_vector.x);
+        playerY = playerY + (speed * rotated_forward_vector.y);
+        playerZ = playerZ + (speed * rotated_forward_vector.z);
 
-        cameraX = playerX + (xLookTarget * .01f);//attempt to make shots more accurate
-        cameraY = playerY + (yLookTarget * .01f);//because the mvp matrix starts at .01
-        cameraZ = playerZ + (zLookTarget * .01f);//and cannot start at 0
-                                                 //but couldn't an extra matrix be added to the mvp to fix this? to like move everything back .01
 
-        xLookTarget += playerX;
-        yLookTarget += playerY;
-        zLookTarget += playerZ;
 
-        GRRLIB_Camera3dSettings(playerX,playerY,playerZ, 0,1,0, xLookTarget,yLookTarget,zLookTarget);
+
+
+        float eyeX = playerX - (rotated_forward_vector.x * .01f);
+        float eyeY = playerY - (rotated_forward_vector.y * .01f);
+        float eyeZ = playerZ - (rotated_forward_vector.z * .01f);
+
+
+        GRRLIB_Camera3dSettings(eyeX, eyeY, eyeZ, rotated_up_vector.x, rotated_up_vector.y, rotated_up_vector.z, playerX + rotated_forward_vector.x,playerY + rotated_forward_vector.y,playerZ + rotated_forward_vector.z);
+
+
 
         // ---------------------------------------------------------------------
         // Place your drawing code here
@@ -246,6 +352,8 @@ int main(int argc, char **argv) {
         int howManyShots = loadShots(timeLongLong,timePassedSinceLastFrame);
         int howManyBeams = loadBeams(timePassedSinceLastFrame);
         int howManyBeamsSpecial = loadBeamsSpecial(timePassedSinceLastFrame);
+
+        moveYStars();
 
         howManyBeamsTest = howManyBeams + howManyBeamsSpecial;
 

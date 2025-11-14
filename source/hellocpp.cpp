@@ -9,17 +9,25 @@
 #include "Y_Star.h"
 #include "Shot.h"
 
-const float BEAM_SIZE_SHOTS = 4.20f;
+const float BEAM_SIZE_SHOTS = .777f;
 
 
 static std::vector<Y_Star> yStars;
 void loadYstars(){
     srand(time(NULL));
     for(int i = 0; i < 50;i++){
-        yStars.push_back(Y_Star(rand() % 2000 - 1000,rand() % 2000 - 1000,rand() % 2000 - 1000));
+        yStars.push_back(Y_Star(rand() % 2000 - 1000,rand() % 2000 - 1000,rand() % 2000 - 1000,(rand() % 420) - 210,(rand() % 420) - 210,(rand() % 420) - 210));
     }
 }
+float yStarSpeed = .017f;
+void moveYStars(){
+    for(Y_Star& yStar:yStars){
+        yStar.x = yStar.x + (yStar.xAcc * yStarSpeed);
+        yStar.y = yStar.y + (yStar.yAcc * yStarSpeed);
+        yStar.z = yStar.z + (yStar.zAcc * yStarSpeed);
 
+    }
+}
 int addNumbers(int a, int b) {
     return (a + b); // Returns the sum of a and b
 }
@@ -57,7 +65,7 @@ void beamBlocks(float fromX, float fromY, float fromZ, long long currentTime){
 }
 static std::vector<Beam> specialBeams;
 static std::vector<Shot> shots;
-int shotReloadingSpeed = 200;
+int shotReloadingSpeed = 30;
 int bulletLifetime = 2000;
 long long shotReloadingTimer = 0;
 void shoot(long long currentTime,float fromX,float fromY,float fromZ,float targetX,float targetY,float targetZ){
@@ -207,7 +215,7 @@ int loadShots(long long currentTime, int timePassed){
                     yStar.x = rand() % 2000 - 1000;
                     yStar.y = rand() % 2000 - 1000;
                     yStar.z = rand() % 2000 - 1000;
-                    yStar.blockSize = 20.0f;
+                    yStar.blockSize = 37 + (rand() % 5);
                     goto continueOuterLoop0;
 
                 //}

@@ -6,8 +6,11 @@
 
 class Y_Star : public Block{
     public:
-        Y_Star(float fromX, float fromY, float fromZ);
+        Y_Star(float fromX, float fromY, float fromZ, float xAcc, float yAcc, float zAcc);
         float blockSize;
+        float xAcc;
+        float yAcc;
+        float zAcc;
     protected:
 
     private:
