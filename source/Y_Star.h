@@ -6,13 +6,14 @@
 
 class Y_Star : public Block{
     public:
-        Y_Star(float fromX, float fromY, float fromZ, float xAcc, float yAcc, float zAcc);
+        Y_Star(int level, float fromX, float fromY, float fromZ, float xAcc, float yAcc, float zAcc);
         float blockSize;
         void changeDirection();
         void normalizeAcc();
         float xAcc;
         float yAcc;
         float zAcc;
+        int level;
     protected:
 
     private:

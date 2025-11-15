@@ -172,21 +172,17 @@ int main(int argc, char **argv) {
     float playerY = 0.0f;
     float playerZ = 0.0f;
 
+    int level = 0;
 
     float speed = 0.0f;
-    float playerAcc = .00420f;
-    float drag = .001f;
+    float playerAcc = .004431f;
+    const float drag = .001f;
     float sensitivity = .002f;
-    float lookRightAmount = 0.0f;
-    float lookUpAmount = 0.0f;
 
     long long lastTime = timeInMilliseconds();
     long long nextSecond = lastTime + 1000;
     int fpsCount = 0;
     int fps = 0;
-    int howManyBeamsTest = 0;
-
-    loadYstars();
 
     srand(time(NULL));
 
@@ -199,7 +195,6 @@ int main(int argc, char **argv) {
     Vector3 x_axis = {1.0f, 0.0f, 0.0f};//axis of rotation
     Vector3 y_axis = {0.0f, 1.0f, 0.0f};//axis of rotation
     Vector3 z_axis = {0.0f, 0.0f, 1.0f};//axis of rotation
-    float angle_rad = lookUpAmount;//how much to rotate
     Quaternion quaternionX = quat_from_axis_angle(x_axis, 0);
     Quaternion quaternionY = quat_from_axis_angle(y_axis, 0);
     Quaternion quaternionZ = quat_from_axis_angle(z_axis, 0);
@@ -232,6 +227,8 @@ int main(int argc, char **argv) {
         char strFPS_Num[15];
         sprintf(strFPS_Num, "%d", fps);
         strcat(strFPS,strFPS_Num);
+
+        char strLevel[20] = "LEVEL: ";
 
         if(abs(playerX) > 125 || abs(playerY) > 125 || abs(playerZ) > 125){
             //move stars beams and special
@@ -331,33 +328,30 @@ int main(int argc, char **argv) {
         // Place your drawing code here
         // ---------------------------------------------------------------------
 
-        //char strTest[10];
-        //sprintf(strTest, "%d", howManyBeamsTest);
-
         //GRRLIB_Printf(20, 20, tex_font, 0xFFFFFFFF, 1, "HELLO WORLD!");
         //GRRLIB_Printf(20, 36, tex_font, 0xFFFFFFFF, 1, strTime);
 
-        //GRRLIB_Printf(20, 36, tex_font, 0xFFFFFFFF, 1, strMath);
-        //GRRLIB_Printf(20, 68, tex_font, 0xFFFFFFFF, 1, strTest);
-
-        //char* source_pointer = get_static_string();
-        //char destination_array[101]; // SIZE must be large enough to hold the string, including the null terminator.
-        //snprintf(destination_array, sizeof(destination_array), "%s", source_pointer);
-        //GRRLIB_Printf(20, 100, tex_font, 0xFFFFFFFF, 1, destination_array);
 
         GRRLIB_3dMode(0.1, 2000, 120, 1, 0);
         GRRLIB_SetBlend(GRRLIB_BLEND_ALPHA);
         int howManyShots = loadShots(timeLongLong,timePassedSinceLastFrame);
         int howManyBeams = loadBeams(timePassedSinceLastFrame);
         int howManyBeamsSpecial = loadBeamsSpecial(timePassedSinceLastFrame);
+        int howManyYStars = moveYStars(timeLongLong,timePassedSinceLastFrame);
 
-        moveYStars(timeLongLong,timePassedSinceLastFrame);
-
-        howManyBeamsTest = howManyBeams + howManyBeamsSpecial;
+        if(howManyYStars == 0){
+            level++;
+            if(level > 10){
+                level = 10;
+            }
+            playerAcc = .00420f + (level * .0002);
+            loadYstars(level);
+            howManyYStars = moveYStars(timeLongLong,timePassedSinceLastFrame);
+        }
 
         GRRLIB_ObjectView(0,0,0,0,0,0,1.0f,1.0f,1.0f);
         GRRLIB_SetTexture(tex_ystar, FALSE);
-        GX_Begin(GX_QUADS, GX_VTXFMT0, 50 * 24);//50 ystars
+        GX_Begin(GX_QUADS, GX_VTXFMT0, howManyYStars * 24);
 
         drawY_Stars();
 
@@ -405,8 +399,14 @@ int main(int argc, char **argv) {
 
         GRRLIB_Printf(20, 20, tex_font, 0xFFFFFFFF, 1, strFPS);
 
-
-
+        char strLevel_Num[15];
+        if(level < 10){
+            sprintf(strLevel_Num, "%d", level);
+        }else{
+            sprintf(strLevel_Num, "%s", "MAX");
+        }
+        strcat(strLevel,strLevel_Num);
+        GRRLIB_Printf(20, 36, tex_font, 0xFFFFFFFF, 1, strLevel);
 
         GRRLIB_Render();  // Render the frame buffer to the TV
 

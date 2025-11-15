@@ -13,27 +13,39 @@ const float BEAM_SIZE_SHOTS = .777f;
 
 
 static std::vector<Y_Star> yStars;
-void loadYstars(){
+float yStarSpeed = 0;
+float yStarAcc = .00420f;
+const float drag = .001f;
+
+void loadYstars(int level){
     srand(time(NULL));
-    for(int i = 0; i < 50;i++){
-        yStars.push_back(Y_Star(rand() % 2000 - 1000,rand() % 2000 - 1000,rand() % 2000 - 1000,(rand() % 420) - 210,(rand() % 420) - 210,(rand() % 420) - 210));
+    for(int i = 0; i < 12;i++){
+        yStars.push_back(Y_Star(level, rand() % 2000 - 1000,rand() % 2000 - 1000,rand() % 2000 - 1000,(rand() % 420) - 210,(rand() % 420) - 210,(rand() % 420) - 210));
     }
+    yStarSpeed = 0;
+    yStarAcc = .00420f + (level * .0002);
 }
-float yStarSpeed = .2777f;
 long long timeToChangeY_StarDirection = 0;
-void moveYStars(long long timeLongLong, int timePassed){
+int moveYStars(long long timeLongLong, int timePassed){
     if(timeToChangeY_StarDirection <= timeLongLong){
-        timeToChangeY_StarDirection = timeLongLong + 1000;
+        timeToChangeY_StarDirection = timeLongLong + 100;
         for(Y_Star& yStar:yStars){
             yStar.changeDirection();
         }
     }
+    yStarSpeed += (yStarAcc * timePassed);
+    yStarSpeed -= (yStarSpeed * drag * timePassed);
+    if(yStarSpeed < 0){
+        yStarSpeed = 0;
+    }
     for(Y_Star& yStar:yStars){
-        yStar.x += (yStar.xAcc * yStarSpeed * timePassed);
-        yStar.y += (yStar.yAcc * yStarSpeed * timePassed);
-        yStar.z += (yStar.zAcc * yStarSpeed * timePassed);
+
+        yStar.x += (yStarSpeed * yStar.xAcc);
+        yStar.y += (yStarSpeed * yStar.yAcc);
+        yStar.z += (yStarSpeed * yStar.zAcc);
 
     }
+    return yStars.size();
 }
 
 static std::string myString = "DEFAULT STRING";
@@ -203,6 +215,7 @@ int loadShots(long long currentTime, int timePassed){
         shot.x = shot.x + (shot.xAcc * speed);
         shot.y = shot.y + (shot.yAcc * speed);
         shot.z = shot.z + (shot.zAcc * speed);
+        std::vector<Y_Star> remainingY_Stars;
         for(int i = 0;i < yStars.size();i++){
             Y_Star& yStar = yStars[i];
             if(calculateDistance(shot.x,shot.y,shot.z,yStar.x,yStar.y,yStar.z) < sqrt(yStar.blockSize * yStar.blockSize) + sqrt(BEAM_SIZE_SHOTS * BEAM_SIZE_SHOTS)){
@@ -212,13 +225,11 @@ int loadShots(long long currentTime, int timePassed){
                 beams.push_back(Beam(yStar.x,yStar.y,yStar.z,-1,0,0));
                 beams.push_back(Beam(yStar.x,yStar.y,yStar.z,0,0,1));
                 beams.push_back(Beam(yStar.x,yStar.y,yStar.z,0,0,-1));
-                yStar.x = rand() % 2000 - 1000;
-                yStar.y = rand() % 2000 - 1000;
-                yStar.z = rand() % 2000 - 1000;
-                yStar.blockSize = 37 + (rand() % 5);
                 continue;
             }
+            remainingY_Stars.push_back(yStar);
         }
+        yStars = remainingY_Stars;
         newShotsList.push_back(shot);
     }
     shots = newShotsList;

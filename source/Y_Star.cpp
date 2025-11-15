@@ -82,7 +82,7 @@ void Y_Star::normalizeAcc(){
 }
 
 
-Y_Star::Y_Star(float fromX, float fromY, float fromZ, float xAcc, float yAcc, float zAcc){
+Y_Star::Y_Star(int level, float fromX, float fromY, float fromZ, float xAcc, float yAcc, float zAcc){
     x = fromX;
     y = fromY;
     z = fromZ;
@@ -93,15 +93,17 @@ Y_Star::Y_Star(float fromX, float fromY, float fromZ, float xAcc, float yAcc, fl
     this->yAcc = yAcc;
     this->zAcc = zAcc;
 
+    this->level = level;
+
     normalizeAcc();
 
 
 }
 
 void Y_Star::changeDirection(){
-    float roll = ((rand() % 420) - 210) / 210;
-    float pitch = ((rand() % 420) - 210) / 210;
-    float yaw = ((rand() % 420) - 210) / 210;
+    float roll = level / 5 * ((rand() % 420) - 210) / 210;
+    float pitch = level / 5 * ((rand() % 420) - 210) / 210;
+    float yaw = level / 5 * ((rand() % 420) - 210) / 210;
     Vector3 axis_of_rotation_roll = {1.0f, 0.0f, 0.0f};
     Vector3 axis_of_rotation_pitch = {0.0f, 1.0f, 0.0f};
     Vector3 axis_of_rotation_yaw = {0.0f, 0.0f, 1.0f};
