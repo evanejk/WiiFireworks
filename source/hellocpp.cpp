@@ -19,17 +19,21 @@ void loadYstars(){
         yStars.push_back(Y_Star(rand() % 2000 - 1000,rand() % 2000 - 1000,rand() % 2000 - 1000,(rand() % 420) - 210,(rand() % 420) - 210,(rand() % 420) - 210));
     }
 }
-float yStarSpeed = .017f;
-void moveYStars(){
+float yStarSpeed = .2777f;
+long long timeToChangeY_StarDirection = 0;
+void moveYStars(long long timeLongLong, int timePassed){
+    if(timeToChangeY_StarDirection <= timeLongLong){
+        timeToChangeY_StarDirection = timeLongLong + 1000;
+        for(Y_Star& yStar:yStars){
+            yStar.changeDirection();
+        }
+    }
     for(Y_Star& yStar:yStars){
-        yStar.x = yStar.x + (yStar.xAcc * yStarSpeed);
-        yStar.y = yStar.y + (yStar.yAcc * yStarSpeed);
-        yStar.z = yStar.z + (yStar.zAcc * yStarSpeed);
+        yStar.x += (yStar.xAcc * yStarSpeed * timePassed);
+        yStar.y += (yStar.yAcc * yStarSpeed * timePassed);
+        yStar.z += (yStar.zAcc * yStarSpeed * timePassed);
 
     }
-}
-int addNumbers(int a, int b) {
-    return (a + b); // Returns the sum of a and b
 }
 
 static std::string myString = "DEFAULT STRING";
@@ -188,7 +192,7 @@ void loopAroundOutOfBoundsWorldObjects(){
     }
 
 }
-float shotSpeed = 1.2f;
+float shotSpeed = 1.0f;
 int loadShots(long long currentTime, int timePassed){
     std::vector<Shot> newShotsList;
     long speed = shotSpeed * (float)timePassed;
@@ -202,27 +206,20 @@ int loadShots(long long currentTime, int timePassed){
         for(int i = 0;i < yStars.size();i++){
             Y_Star& yStar = yStars[i];
             if(calculateDistance(shot.x,shot.y,shot.z,yStar.x,yStar.y,yStar.z) < sqrt(yStar.blockSize * yStar.blockSize) + sqrt(BEAM_SIZE_SHOTS * BEAM_SIZE_SHOTS)){
-                //yStar.blockSize *= 1.42;
-                //if(yStar.blockSize > 50.0f){
-                    //draw explosion
-                    beams.push_back(Beam(yStar.x,yStar.y,yStar.z,0,1,0));
-                    beams.push_back(Beam(yStar.x,yStar.y,yStar.z,1,0,0));
-                    beams.push_back(Beam(yStar.x,yStar.y,yStar.z,0,-1,0));
-                    beams.push_back(Beam(yStar.x,yStar.y,yStar.z,-1,0,0));
-                    beams.push_back(Beam(yStar.x,yStar.y,yStar.z,0,0,1));
-                    beams.push_back(Beam(yStar.x,yStar.y,yStar.z,0,0,-1));
-                    //move the ystar and reset its size
-                    yStar.x = rand() % 2000 - 1000;
-                    yStar.y = rand() % 2000 - 1000;
-                    yStar.z = rand() % 2000 - 1000;
-                    yStar.blockSize = 37 + (rand() % 5);
-                    goto continueOuterLoop0;
-
-                //}
+                beams.push_back(Beam(yStar.x,yStar.y,yStar.z,0,1,0));
+                beams.push_back(Beam(yStar.x,yStar.y,yStar.z,1,0,0));
+                beams.push_back(Beam(yStar.x,yStar.y,yStar.z,0,-1,0));
+                beams.push_back(Beam(yStar.x,yStar.y,yStar.z,-1,0,0));
+                beams.push_back(Beam(yStar.x,yStar.y,yStar.z,0,0,1));
+                beams.push_back(Beam(yStar.x,yStar.y,yStar.z,0,0,-1));
+                yStar.x = rand() % 2000 - 1000;
+                yStar.y = rand() % 2000 - 1000;
+                yStar.z = rand() % 2000 - 1000;
+                yStar.blockSize = 37 + (rand() % 5);
+                continue;
             }
         }
         newShotsList.push_back(shot);
-        continueOuterLoop0:
     }
     shots = newShotsList;
     return shots.size();

@@ -351,7 +351,7 @@ int main(int argc, char **argv) {
         int howManyBeams = loadBeams(timePassedSinceLastFrame);
         int howManyBeamsSpecial = loadBeamsSpecial(timePassedSinceLastFrame);
 
-        moveYStars();
+        moveYStars(timeLongLong,timePassedSinceLastFrame);
 
         howManyBeamsTest = howManyBeams + howManyBeamsSpecial;
 

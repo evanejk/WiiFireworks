@@ -4,9 +4,7 @@
     void drawShots();
     void shoot(long long currentTime,float fromX,float fromY,float fromZ,float targetX,float targetY,float targetZ);
     int loadShots(long long currentTime, int timePassed);
-    int addNumbers(int a, int b);
     void beamBlocks(float fromX, float fromY, float fromZ,  long long timeLongLong);//
-    //void special(int timePassed);
     void drawBeams();
     void drawBeamsSpecial();
     int loadBeams(int timePassed);
@@ -18,7 +16,7 @@
     void loopAroundOutOfBoundsWorldObjects();
     double calculateDistance(float x1, float y1, float z1, float x2, float y2, float z2);
     void drawSky(float x, float y, float z);
-    void moveYStars();
+    void moveYStars(long long timeLongLong, int timePassed);
     #ifdef __cplusplus
     }
     #endif
