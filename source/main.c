@@ -172,7 +172,7 @@ int main(int argc, char **argv) {
     float playerY = 0.0f;
     float playerZ = 0.0f;
 
-    int level = 15;
+    int level = 0;
 
     float speed = 0.0f;
     float playerAcc = .004431f;
