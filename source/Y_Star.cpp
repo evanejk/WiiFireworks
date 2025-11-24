@@ -5,7 +5,30 @@
 struct Vector3 {
     float x, y, z;
 };
+float magnitude(const Vector3& v) {
+    return std::sqrt(v.x * v.x + v.y * v.y + v.z * v.z);
+}
+void normalize(Vector3& v) {
+    float mag = magnitude(v);
 
+    // Guard against division by zero (for the zero vector)
+    if (mag > 0.00001f) {
+        v.x /= mag;
+        v.y /= mag;
+        v.z /= mag;
+    }
+    // If mag is zero, the vector remains {0, 0, 0}
+}
+float dot(const Vector3& v1, const Vector3& v2) {
+    return v1.x * v2.x + v1.y * v2.y + v1.z * v2.z;
+}
+Vector3 cross(const Vector3& v1, const Vector3& v2) {
+    return {
+        v1.y * v2.z - v1.z * v2.y, // new x
+        v1.z * v2.x - v1.x * v2.z, // new y
+        v1.x * v2.y - v1.y * v2.x  // new z
+    };
+}
 struct Quaternion {
     float w, x, y, z;
 
@@ -97,29 +120,71 @@ Y_Star::Y_Star(int level, float fromX, float fromY, float fromZ, float xAcc, flo
 
     normalizeAcc();
 
-
+    reloadedTime = 0;
+}
+const float MAX_TURN_ANGLE = 0.055f; // Approximately 2.86 degrees, adjust as needed.
+const float MAX_WOBBLE_ANGLE = 0.04f; // Very small rotation, adjust as needed.
+float random_float() {
+    return static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
 }
 
-void Y_Star::changeDirection(){
-    float roll = level / 5 * ((rand() % 420) - 210) / 210;
-    float pitch = level / 5 * ((rand() % 420) - 210) / 210;
-    float yaw = level / 5 * ((rand() % 420) - 210) / 210;
-    Vector3 axis_of_rotation_roll = {1.0f, 0.0f, 0.0f};
-    Vector3 axis_of_rotation_pitch = {0.0f, 1.0f, 0.0f};
-    Vector3 axis_of_rotation_yaw = {0.0f, 0.0f, 1.0f};
-    Quaternion rotation_quatX(axis_of_rotation_roll, roll);
-    Quaternion rotation_quatY(axis_of_rotation_pitch, pitch);
-    Quaternion rotation_quatZ(axis_of_rotation_yaw, yaw);
-
-
-
-    Quaternion rotation_quat = rotation_quatX * rotation_quatY;
-    rotation_quat = rotation_quat * rotation_quatZ;
-
+// Function to get a random float in a specified range [-min_val, +min_val]
+float random_range(float range) {
+    // Generates a float between -range and +range
+    return (2.0f * random_float() - 1.0f) * range;
+}
+void Y_Star::changeDirection(float playerX, float playerY, float playerZ){
+    Vector3 vectorToTarget = {playerX - x,playerY - y,playerZ - z};
+    normalize(vectorToTarget);
     Vector3 original_vector = {xAcc, yAcc, zAcc};
-    Vector3 rotated_vector = rotation_quat.rotate(original_vector);
-    xAcc = rotated_vector.x;
-    yAcc = rotated_vector.y;
-    zAcc = rotated_vector.z;
+    //fill in code here to rotate original_vector towards vectorToTarget
+    // a. Calculate the rotation axis (Cross Product)
+    Vector3 rotationAxis = cross(original_vector, vectorToTarget);
+    normalize(rotationAxis); // Normalize the axis
+    // b. Calculate the angle (Dot Product)
+    float cosTheta = dot(original_vector, vectorToTarget);
+    cosTheta = std::max(-1.0f, std::min(1.0f, cosTheta));
+
+    float angle_rad = std::acos(cosTheta);
+    // Determine the actual angle to turn in this step
+    float turn_angle = angle_rad;
+    if (turn_angle > MAX_TURN_ANGLE) {
+        // If the full rotation needed is greater than our limit,
+        // we only rotate by the limit (MAX_TURN_ANGLE).
+        turn_angle = MAX_TURN_ANGLE;
+    }
+    // c. Create the quaternion
+    Quaternion rotation = Quaternion(rotationAxis, turn_angle);
+
+    // --- NEW: Add Random Rotation ---
+
+    // Create a random rotation quaternion (Wobble)
+    // We choose a random axis (unit vector) and a small random angle.
+    Vector3 wobble_axis = {random_range(1.0f), random_range(1.0f), random_range(1.0f)};
+    normalize(wobble_axis);
+
+    float wobble_angle = random_range(MAX_WOBBLE_ANGLE);
+    Quaternion wobble_rotation = Quaternion(wobble_axis, wobble_angle);
+
+
+    // f. Combine the rotations
+    // Order matters! (Wobble * Controlled) means:
+    // 1. First rotate towards the player (Controlled_rotation)
+    // 2. Then apply the slight wobble relative to that new orientation (Wobble_rotation)
+    // Use the multiplication operator: q = q1 * q2
+    Quaternion total_rotation = wobble_rotation * rotation;
+
+
+    // d. Apply the rotation to the Y_Star's acceleration/direction
+    Vector3 new_direction = total_rotation.rotate(original_vector);
+
+    // 4. Update the Y_Star's direction
+    // This assumes the acceleration vectors (xAcc, yAcc, zAcc) ARE the forward direction vector.
+    this->xAcc = new_direction.x;
+    this->yAcc = new_direction.y;
+    this->zAcc = new_direction.z;
+
+    // You must also normalizeAcc() again if the magnitude of the rotation is not exactly 1 (it should be, but safety first)
+    // The normalizeAcc() function you provided already exists and handles this.
     normalizeAcc();
 }

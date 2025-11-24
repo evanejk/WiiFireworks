@@ -200,7 +200,8 @@ int main(int argc, char **argv) {
     Quaternion quaternionZ = quat_from_axis_angle(z_axis, 0);
     Quaternion quaternion = quat_from_axis_angle(x_axis, 0);//just initialize with whatever works
 
-
+    bool vibrating = false;
+    long long stopVibratingTime = 0;
     while(1) {
         float rotatePlayerX = 0;
         float rotatePlayerY = 0;
@@ -209,7 +210,7 @@ int main(int argc, char **argv) {
         PAD_ScanPads();
         int buttonsDownGameCube = PAD_ButtonsDown(0);
         int buttonsHeldGameCube = PAD_ButtonsHeld(0);
-        // not great for the arrow buttons being smooth on gc controller
+
         int stickX = PAD_StickX(0);
         int stickY = PAD_StickY(0);
         long long timeLongLong = timeInMilliseconds();
@@ -227,8 +228,6 @@ int main(int argc, char **argv) {
         char strFPS_Num[15];
         sprintf(strFPS_Num, "%d", fps);
         strcat(strFPS,strFPS_Num);
-
-        char strLevel[20] = "LEVEL: ";
 
         if(abs(playerX) > 125 || abs(playerY) > 125 || abs(playerZ) > 125){
             //move stars beams and special
@@ -273,10 +272,7 @@ int main(int argc, char **argv) {
         if(moveIt || autoPilot){
             speed += (playerAcc * timePassedSinceLastFrame);
         }
-        //if(buttonsHeld & WPAD_BUTTON_2){
-            beamBlocks(rand() % 2000 - 1000,rand() % 2000 - 1000,rand() % 2000 - 1000,timeLongLong);
-            //special(timePassedSinceLastFrame);
-        //}
+        beamBlocks(rand() % 2000 - 1000,rand() % 2000 - 1000,rand() % 2000 - 1000,timeLongLong);
         speed -= (speed * drag * timePassedSinceLastFrame);
         if(speed < 0){
             speed = 0;
@@ -304,7 +300,7 @@ int main(int argc, char **argv) {
 
 
         if(buttonsHeld & WPAD_BUTTON_2 || buttonsHeldGameCube & PAD_BUTTON_X || buttonsHeldGameCube & PAD_BUTTON_Y){
-            shoot(timeLongLong,playerX,playerY,playerZ,rotated_forward_vector.x,rotated_forward_vector.y,rotated_forward_vector.z);
+            shoot(timeLongLong,playerX + (rotated_forward_vector.x * 7),playerY + (rotated_forward_vector.y * 7),playerZ + (rotated_forward_vector.z * 7),rotated_forward_vector.x,rotated_forward_vector.y,rotated_forward_vector.z);
         }
 
         playerX = playerX + (breakAmount * speed * rotated_forward_vector.x);
@@ -322,7 +318,14 @@ int main(int argc, char **argv) {
 
         GRRLIB_Camera3dSettings(eyeX, eyeY, eyeZ, rotated_up_vector.x, rotated_up_vector.y, rotated_up_vector.z, playerX + rotated_forward_vector.x,playerY + rotated_forward_vector.y,playerZ + rotated_forward_vector.z);
 
-
+        if(getHealth() <= 0){
+            clearY_Stars();
+            playerX = rand() % 2000 - 1000;
+            playerY = rand() % 2000 - 1000;
+            playerZ = rand() % 2000 - 1000;
+            setHealth(100.0f);
+            loadYstars(level);
+        }
 
         // ---------------------------------------------------------------------
         // Place your drawing code here
@@ -335,9 +338,20 @@ int main(int argc, char **argv) {
         GRRLIB_3dMode(0.1, 2000, 120, 1, 0);
         GRRLIB_SetBlend(GRRLIB_BLEND_ALPHA);
         int howManyShots = loadShots(timeLongLong,timePassedSinceLastFrame);
+        float healthBefore = getHealth();
+        howManyShots = howManyShots + loadBotShots(timeLongLong,timePassedSinceLastFrame,playerX,playerY,playerZ);
+        if(getHealth() < healthBefore){
+            PAD_ControlMotor(0, PAD_MOTOR_RUMBLE);
+            vibrating = true;
+            stopVibratingTime = timeLongLong + 200;
+        }
+        if(vibrating && stopVibratingTime <= timeLongLong){
+            vibrating = false;
+            PAD_ControlMotor(0, PAD_MOTOR_STOP);
+        }
         int howManyBeams = loadBeams(timePassedSinceLastFrame);
         int howManyBeamsSpecial = loadBeamsSpecial(timePassedSinceLastFrame);
-        int howManyYStars = moveYStars(timeLongLong,timePassedSinceLastFrame);
+        int howManyYStars = moveYStars(timeLongLong,timePassedSinceLastFrame,playerX,playerY,playerZ);
 
         if(howManyYStars == 0){
             level++;
@@ -346,7 +360,7 @@ int main(int argc, char **argv) {
             }
             playerAcc = .00420f + (level * .0002);
             loadYstars(level);
-            howManyYStars = moveYStars(timeLongLong,timePassedSinceLastFrame);
+            howManyYStars = moveYStars(timeLongLong,timePassedSinceLastFrame,playerX,playerY,playerZ);
         }
 
         GRRLIB_ObjectView(0,0,0,0,0,0,1.0f,1.0f,1.0f);
@@ -380,6 +394,7 @@ int main(int argc, char **argv) {
         GX_Begin(GX_QUADS, GX_VTXFMT0, howManyShots * 24);
 
         drawShots();
+        drawBotShots();
 
         GX_End();
 
@@ -399,6 +414,7 @@ int main(int argc, char **argv) {
 
         GRRLIB_Printf(20, 20, tex_font, 0xFFFFFFFF, 1, strFPS);
 
+        char strLevel[20] = "LEVEL: ";
         char strLevel_Num[15];
         if(level < 10){
             sprintf(strLevel_Num, "%d", level);
@@ -407,6 +423,13 @@ int main(int argc, char **argv) {
         }
         strcat(strLevel,strLevel_Num);
         GRRLIB_Printf(20, 36, tex_font, 0xFFFFFFFF, 1, strLevel);
+
+        char strHealth[20] = "HEALTH: ";
+        char strHealthAmount[20];
+        float health = getHealth();
+        sprintf(strHealthAmount, "%f", health);
+        strcat(strHealth,strHealthAmount);
+        GRRLIB_Printf(20, 52, tex_font, 0xFFFFFFFF, 1, strHealth);
 
         GRRLIB_Render();  // Render the frame buffer to the TV
 
