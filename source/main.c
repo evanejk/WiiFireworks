@@ -172,7 +172,7 @@ int main(int argc, char **argv) {
     float playerY = 0.0f;
     float playerZ = 0.0f;
 
-    int level = 0;
+    int level = 1;
 
     float speed = 0.0f;
     float playerAcc = .004431f;
@@ -325,7 +325,7 @@ int main(int argc, char **argv) {
             playerY = rand() % 2000 - 1000;
             playerZ = rand() % 2000 - 1000;
             setHealth(10.0f);
-            level = 0;
+            level = 1;
             loadYstars(level);
         }
 
