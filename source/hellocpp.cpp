@@ -262,7 +262,7 @@ int loadShots(long long currentTime, int timePassed){
     shots = newShotsList;
     return shots.size();
 }
-float health = 100;
+float health = 10;
 float getHealth(){
     return health;
 }
@@ -289,7 +289,7 @@ int loadBotShots(long long currentTime, int timePassed, float playerX, float pla
         shot.y = shot.y + (shot.yAcc * speed);
         shot.z = shot.z + (shot.zAcc * speed);
         if(calculateDistance(shot.x,shot.y,shot.z,playerX,playerY,playerZ) < sqrt(20) + sqrt(BEAM_SIZE_SHOTS * BEAM_SIZE_SHOTS)){//see if bot shot player
-            health -= 10;
+            health -= 1;
             continue;
         }
         newBotShotsList.push_back(shot);

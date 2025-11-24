@@ -172,7 +172,7 @@ int main(int argc, char **argv) {
     float playerY = 0.0f;
     float playerZ = 0.0f;
 
-    int level = 0;
+    int level = 15;
 
     float speed = 0.0f;
     float playerAcc = .004431f;
@@ -202,6 +202,7 @@ int main(int argc, char **argv) {
 
     bool vibrating = false;
     long long stopVibratingTime = 0;
+
     while(1) {
         float rotatePlayerX = 0;
         float rotatePlayerY = 0;
@@ -323,7 +324,8 @@ int main(int argc, char **argv) {
             playerX = rand() % 2000 - 1000;
             playerY = rand() % 2000 - 1000;
             playerZ = rand() % 2000 - 1000;
-            setHealth(100.0f);
+            setHealth(10.0f);
+            level = 0;
             loadYstars(level);
         }
 
@@ -355,10 +357,11 @@ int main(int argc, char **argv) {
 
         if(howManyYStars == 0){
             level++;
-            if(level > 10){
-                level = 10;
+            if(level > 15){
+                level = 15;
             }
             playerAcc = .00420f + (level * .0002);
+            setHealth(10);
             loadYstars(level);
             howManyYStars = moveYStars(timeLongLong,timePassedSinceLastFrame,playerX,playerY,playerZ);
         }
@@ -416,7 +419,7 @@ int main(int argc, char **argv) {
 
         char strLevel[20] = "LEVEL: ";
         char strLevel_Num[15];
-        if(level < 10){
+        if(level < 15){
             sprintf(strLevel_Num, "%d", level);
         }else{
             sprintf(strLevel_Num, "%s", "MAX");
